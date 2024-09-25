@@ -1,0 +1,408 @@
+# Mailu with Let's Encrypt Using Docker Compose
+
+# The complete installation guide is available on my website https://www.heyvaldemar.com/install-mailu-using-docker-compose/
+
+# Change variables in the `.env` to meet your requirements.
+# The `SECRET_KEY` is crucial for the security of your Mailu installation. It is used to encrypt sensitive data and should be kept confidential.
+# If this key has been exposed publicly or used previously, it's important to generate a new one to maintain the security of your mail server.
+# You can generate a new `SECRET_KEY` by running the following command:
+# `openssl rand -hex 16`
+# Note that the `.env` file should be in the same directory as `mailu-traefik-letsencrypt-docker-compose.yml`.
+
+# Create networks for your services before deploying the configuration using the commands:
+# `docker network create traefik-network`
+
+# Deploy Mailu using Docker Compose:
+# `docker compose -f mailu-traefik-letsencrypt-docker-compose.yml -p mailu up -d`
+
+# # Administrator Account
+# Set password for administrator account. Replace `PASSWORD` with a strong, secure password:
+# `docker compose -p mailu exec admin flask mailu admin admin yourdomain.com PASSWORD`
+
+# Author
+# I’m Vladimir Mikhalev, the Docker Captain, but my friends can call me Valdemar.
+# https://www.docker.com/captains/vladimir-mikhalev/
+
+# My website with detailed IT guides: https://www.heyvaldemar.com/
+# Follow me on YouTube: https://www.youtube.com/channel/UCf85kQ0u1sYTTTyKVpxrlyQ?sub_confirmation=1
+# Follow me on Twitter: https://twitter.com/heyValdemar
+# Follow me on Instagram: https://www.instagram.com/heyvaldemar/
+# Follow me on Threads: https://www.threads.net/@heyvaldemar
+# Follow me on Mastodon: https://mastodon.social/@heyvaldemar
+# Follow me on Bluesky: https://bsky.app/profile/heyvaldemar.bsky.social
+# Follow me on Facebook: https://www.facebook.com/heyValdemarFB/
+# Follow me on TikTok: https://www.tiktok.com/@heyvaldemar
+# Follow me on LinkedIn: https://www.linkedin.com/in/heyvaldemar/
+# Follow me on GitHub: https://github.com/heyvaldemar
+
+# Communication
+# Chat with IT pros on Discord: https://discord.gg/AJQGCCBcqf
+# Reach me at ask@sre.gg
+
+# Give Thanks
+# Support on GitHub: https://github.com/sponsors/heyValdemar
+# Support on Patreon: https://www.patreon.com/heyValdemar
+# Support on BuyMeaCoffee: https://www.buymeacoffee.com/heyValdemar
+# Support on Ko-fi: https://ko-fi.com/heyValdemar
+# Support on PayPal: https://www.paypal.com/paypalme/heyValdemarCOM
+
+networks:
+  mailu-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${SUBNET}
+  radicale:
+    driver: bridge
+  webmail-network:
+    driver: bridge
+  clamav-network:
+    driver: bridge
+  oletools-network:
+    driver: bridge
+    internal: true
+  fts-attachments-network:
+    driver: bridge
+    internal: true
+  traefik-network:
+    external: true
+
+volumes:
+  mailu-data:
+  mailu-dav:
+  mailu-mail:
+  mailu-redis:
+  mailu-filter:
+  mailu-mailqueue:
+  mailu-webmail:
+  mailu-certificates:
+  mailu-dkim:
+  mailu-override:
+  traefik-certificates:
+
+services:
+  redis:
+    image: ${REDIS_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-redis:/data
+    networks:
+      - mailu-network
+    dns:
+      - ${RESOLVER_IP}
+    restart: unless-stopped
+    depends_on:
+      - resolver
+
+  resolver:
+    image: ${RESOLVER_IMAGE_TAG}
+    env_file: .env
+    networks:
+      mailu-network:
+        ipv4_address: ${RESOLVER_IP}
+    restart: unless-stopped
+
+  front:
+    image: ${FRONT_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-certificates:/certs
+      - mailu-override:/overrides:ro
+    networks:
+      - mailu-network
+      - webmail-network
+      - radicale
+      - traefik-network
+    dns:
+      - ${RESOLVER_IP}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.smtp.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.smtp.entrypoints=smtp"
+      - "traefik.tcp.routers.smtp.service=smtp"
+      - "traefik.tcp.services.smtp.loadbalancer.server.port=25"
+      - "traefik.tcp.routers.smtps.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.smtps.entrypoints=smtps"
+      - "traefik.tcp.routers.smtps.service=smtps"
+      - "traefik.tcp.services.smtps.loadbalancer.server.port=465"
+      - "traefik.tcp.routers.submission.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.submission.entrypoints=submission"
+      - "traefik.tcp.routers.submission.service=submission"
+      - "traefik.tcp.services.submission.loadbalancer.server.port=587"
+      - "traefik.tcp.routers.pop3.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.pop3.entrypoints=pop3"
+      - "traefik.tcp.routers.pop3.service=pop3"
+      - "traefik.tcp.services.pop3.loadbalancer.server.port=110"
+      - "traefik.tcp.routers.pop3s.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.pop3s.entrypoints=pop3s"
+      - "traefik.tcp.routers.pop3s.service=pop3s"
+      - "traefik.tcp.services.pop3s.loadbalancer.server.port=995"
+      - "traefik.tcp.routers.imap.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.imap.entrypoints=imap"
+      - "traefik.tcp.routers.imap.service=imap"
+      - "traefik.tcp.services.imap.loadbalancer.server.port=143"
+      - "traefik.tcp.routers.imaps.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.imaps.entrypoints=imaps"
+      - "traefik.tcp.routers.imaps.service=imaps"
+      - "traefik.tcp.services.imaps.loadbalancer.server.port=993"
+      - "traefik.tcp.routers.sieve.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.sieve.entrypoints=sieve"
+      - "traefik.tcp.routers.sieve.service=sieve"
+      - "traefik.tcp.services.sieve.loadbalancer.server.port=4190"
+      - "traefik.http.routers.mail.rule=Host(`${MAILU_HOSTNAME}`)"
+      - "traefik.http.routers.mail.entrypoints=websecure"
+      - "traefik.http.routers.mail.tls=true"
+      - "traefik.http.routers.mail.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mail.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik-network"
+    restart: unless-stopped
+    depends_on:
+      - resolver
+
+  admin:
+    image: ${ADMIN_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-data:/data
+      - mailu-dkim:/dkim
+    networks:
+      - mailu-network
+      - traefik-network
+    dns:
+      - ${RESOLVER_IP}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailu-admin.rule=Host(`${MAILU_ADMIN_HOSTNAME}`)"
+      - "traefik.http.routers.mailu-admin.entrypoints=websecure"
+      - "traefik.http.routers.mailu-admin.tls=true"
+      - "traefik.http.routers.mailu-admin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mailu-admin.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik-network"
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - resolver
+
+  imap:
+    image: ${IMAP_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-mail:/mail
+      - mailu-override:/overrides:ro
+    networks:
+      - mailu-network
+      - fts-attachments-network
+    dns:
+      - ${RESOLVER_IP}
+    restart: unless-stopped
+    depends_on:
+      - front
+      - fts-attachments
+      - resolver
+
+  smtp:
+    image: ${SMTP_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-mailqueue:/queue
+      - mailu-override:/overrides:ro
+    networks:
+      - mailu-network
+    dns:
+      - ${RESOLVER_IP}
+    restart: unless-stopped
+    depends_on:
+      - front
+      - resolver
+
+  oletools:
+    image: ${OLETOOLS_IMAGE_TAG}
+    env_file: .env
+    hostname: olefy
+    networks:
+      - oletools-network
+    dns:
+      - ${RESOLVER_IP}
+    restart: unless-stopped
+    depends_on:
+      - resolver
+
+  fts-attachments:
+    image: ${FTS_ATTACHMENTS_IMAGE_TAG}
+    env_file: .env
+    hostname: tika
+    networks:
+      - fts-attachments-network
+    dns:
+      - ${RESOLVER_IP}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -nv -t1 -O /dev/null http://127.0.0.1:9998/tika || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    depends_on:
+      - resolver
+
+  antispam:
+    image: ${ANTISPAM_IMAGE_TAG}
+    env_file: .env
+    hostname: antispam
+    volumes:
+      - mailu-filter:/var/lib/rspamd
+      - mailu-override:/overrides:ro
+    networks:
+      - mailu-network
+      - oletools-network
+      - clamav-network
+    dns:
+      - ${RESOLVER_IP}
+    restart: unless-stopped
+    depends_on:
+      - front
+      - redis
+      - oletools
+      - antivirus
+      - resolver
+
+  antivirus:
+    image: ${ANTIVIRUS_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-filter:/var/lib/clamav
+    networks:
+      - clamav-network
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 $(cat /tmp/clamd.pid) && kill -0 $(cat /tmp/freshclam.pid)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  webdav:
+    image: ${WEBDAV_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-dav:/data
+    networks:
+      - radicale
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailu-webdav.rule=Host(`${MAILU_WEBDAV_HOSTNAME}`)"
+      - "traefik.http.routers.mailu-webdav.entrypoints=websecure"
+      - "traefik.http.routers.mailu-webdav.tls=true"
+      - "traefik.http.routers.mailu-webdav.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mailu-webdav.loadbalancer.server.port=5232"
+      - "traefik.docker.network=traefik-network"
+    restart: unless-stopped
+
+  fetchmail:
+    image: ${FETCHMAIL_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-data:/data
+    networks:
+      - mailu-network
+    dns:
+      - ${RESOLVER_IP}
+    restart: unless-stopped
+    depends_on:
+      - admin
+      - smtp
+      - imap
+      - resolver
+
+  webmail:
+    image: ${WEBMAIL_IMAGE_TAG}
+    env_file: .env
+    volumes:
+      - mailu-webmail:/data
+      - mailu-override:/overrides:ro
+    networks:
+      - webmail-network
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailu-webmail.rule=Host(`${MAILU_WEBMAIL_HOSTNAME}`)"
+      - "traefik.http.routers.mailu-webmail.entrypoints=websecure"
+      - "traefik.http.routers.mailu-webmail.tls=true"
+      - "traefik.http.routers.mailu-webmail.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mailu-webmail.loadbalancer.server.port=80"
+      - "traefik.docker.network=traefik-network"
+    restart: unless-stopped
+    depends_on:
+      - front
+
+  traefik:
+    image: ${TRAEFIK_IMAGE_TAG}
+    env_file: .env
+    command:
+      - "--log.level=${TRAEFIK_LOG_LEVEL}"
+      - "--accesslog=true"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--ping=true"
+      - "--ping.entrypoint=ping"
+      - "--entryPoints.ping.address=:8082"
+      - "--entryPoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--entryPoints.smtp.address=:25"
+      - "--entryPoints.smtps.address=:465"
+      - "--entryPoints.submission.address=:587"
+      - "--entryPoints.pop3.address=:110"
+      - "--entryPoints.pop3s.address=:995"
+      - "--entryPoints.imap.address=:143"
+      - "--entryPoints.imaps.address=:993"
+      - "--entryPoints.sieve.address=:4190"
+      - "--providers.docker=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedByDefault=false"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json"
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.buckets=0.1,0.3,1.2,5.0"
+      - "--global.checkNewVersion=true"
+      - "--global.sendAnonymousUsage=false"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - traefik-certificates:/etc/traefik/acme
+    networks:
+      - traefik-network
+    ports:
+      - "25:25"
+      - "465:465"
+      - "587:587"
+      - "110:110"
+      - "995:995"
+      - "143:143"
+      - "993:993"
+      - "4190:4190"
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:8082/ping", "--spider"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.dashboard.middlewares=authtraefik"
+      - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    restart: unless-stopped
