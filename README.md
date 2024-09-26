@@ -10,6 +10,39 @@ To generate a 128-bit security key for the `SECRET_KEY` variable, use the follow
 
 💡 Note that the `.env` file should be in the same directory as `mailu-traefik-letsencrypt-docker-compose.yml`.
 
+Set up the following DNS and firewall configurations for our Mailu email server on yourdomain.com:
+
+## DNS Records
+### A Records
+- `mailu.yourdomain.com` → `[Server IP]`
+- `admin.mailu.yourdomain.com` → `[Server IP]`
+- `webmail.mailu.yourdomain.com` → `[Server IP]`
+- `webdav.mailu.yourdomain.com` → `[Server IP]`
+- `traefik.mailu.yourdomain.com` → `[Server IP]`
+
+### MX Record
+- `yourdomain.com MX` → `mailu.yourdomain.com (Priority: 10)`
+
+### SPF Record
+- `TXT yourdomain.com` → `v=spf1 a mx ~all`
+
+### DKIM Record
+- `TXT mail._domainkey.yourdomain.com` → `(DKIM Key)`
+
+### DMARC Record
+- `TXT _dmarc.yourdomain.com` → `v=DMARC1; p=none; rua=mailto:admin@yourdomain.com`
+
+### PTR Record
+- `[Server IP]` → `mailu.yourdomain.com`
+
+### Firewall Ports to Open
+- **SMTP:** 25, 465, 587
+- **IMAP/POP3:** 143, 993, 110, 995
+- **Sieve:** 4190
+- **Web Traffic:** 80, 443
+
+Replace `[Server IP]` and `(DKIM Key)` with the appropriate values for your server.
+
 Create networks for your services before deploying the configuration using the commands:
 
 `docker network create traefik-network`
