@@ -45,6 +45,7 @@ networks:
 
 volumes:
   mailu-data:
+  mailu-fetchmail:
   mailu-dav:
   mailu-mail:
   mailu-redis:
@@ -375,7 +376,10 @@ services:
     image: *fetchmail-image
     env_file: .env
     volumes:
-      - mailu-data:/data
+      # Own volume on purpose: fetchmail runs as its own user (uid 101)
+      # and chowns its data dir at startup — sharing admin's volume let
+      # that chown break the admin database ownership.
+      - mailu-fetchmail:/data
     networks:
       - mailu-network
     dns:
