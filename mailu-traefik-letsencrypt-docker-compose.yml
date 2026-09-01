@@ -57,25 +57,6 @@ volumes:
   traefik-certificates:
 
 services:
-  volume-permissions:
-    # Mailu 2024.06 images drop privileges to the mailu user (uid 100,
-    # gid 1000), but fresh named volumes are created root-owned — without
-    # this one-shot chown the admin container dies on its sqlite database
-    # and DKIM store.
-    image: *redis-image
-    user: "0:0"
-    entrypoint: ["sh", "-c", "chown -R 100:1000 /vols/* && echo volumes ready"]
-    volumes:
-      - mailu-data:/vols/data
-      - mailu-dkim:/vols/dkim
-      - mailu-mail:/vols/mail
-      - mailu-mailqueue:/vols/mailqueue
-      - mailu-filter:/vols/filter
-      - mailu-dav:/vols/dav
-      - mailu-webmail:/vols/webmail
-      - mailu-override:/vols/override
-    restart: "no"
-
   redis:
     image: *redis-image
     env_file: .env
@@ -196,6 +177,11 @@ services:
   admin:
     image: *admin-image
     env_file: .env
+    # The image starts as root and drops to the mailu user (uid 100) —
+    # but docker's first-mount copy-up leaves fresh named volumes
+    # root-owned, so ownership is fixed here, inside the container,
+    # right before startup.
+    command: ["/bin/sh", "-c", "chown -R mailu:mailu /data /dkim 2>/dev/null; exec /start.py"]
     volumes:
       - mailu-data:/data
       - mailu-dkim:/dkim
@@ -233,12 +219,15 @@ services:
         condition: service_started
       resolver:
         condition: service_started
-      volume-permissions:
-        condition: service_completed_successfully
 
   imap:
     image: *imap-image
     env_file: .env
+    # The image starts as root and drops to the mailu user (uid 100) —
+    # but docker's first-mount copy-up leaves fresh named volumes
+    # root-owned, so ownership is fixed here, inside the container,
+    # right before startup.
+    command: ["/bin/sh", "-c", "chown -R mailu:mailu /mail 2>/dev/null; exec /start.py"]
     volumes:
       - mailu-mail:/mail
       - mailu-override:/overrides:ro
@@ -256,6 +245,11 @@ services:
   smtp:
     image: *smtp-image
     env_file: .env
+    # The image starts as root and drops to the mailu user (uid 100) —
+    # but docker's first-mount copy-up leaves fresh named volumes
+    # root-owned, so ownership is fixed here, inside the container,
+    # right before startup.
+    command: ["/bin/sh", "-c", "chown -R mailu:mailu /queue 2>/dev/null; exec /start.py"]
     volumes:
       - mailu-mailqueue:/queue
       - mailu-override:/overrides:ro
@@ -301,6 +295,11 @@ services:
   antispam:
     image: *antispam-image
     env_file: .env
+    # The image starts as root and drops to the mailu user (uid 100) —
+    # but docker's first-mount copy-up leaves fresh named volumes
+    # root-owned, so ownership is fixed here, inside the container,
+    # right before startup.
+    command: ["/bin/sh", "-c", "chown -R mailu:mailu /var/lib/rspamd 2>/dev/null; exec /start.py"]
     hostname: antispam
     volumes:
       - mailu-filter:/var/lib/rspamd
@@ -337,6 +336,11 @@ services:
   webdav:
     image: *webdav-image
     env_file: .env
+    # The image starts as root and drops to the mailu user (uid 100) —
+    # but docker's first-mount copy-up leaves fresh named volumes
+    # root-owned, so ownership is fixed here, inside the container,
+    # right before startup.
+    command: ["/bin/sh", "-c", "chown -R mailu:mailu /data 2>/dev/null; exec radicale -S -C /radicale.conf"]
     volumes:
       - mailu-dav:/data
     networks:
@@ -386,6 +390,11 @@ services:
   webmail:
     image: *webmail-image
     env_file: .env
+    # The image starts as root and drops to the mailu user (uid 100) —
+    # but docker's first-mount copy-up leaves fresh named volumes
+    # root-owned, so ownership is fixed here, inside the container,
+    # right before startup.
+    command: ["/bin/sh", "-c", "chown -R mailu:mailu /data 2>/dev/null; exec /start.py"]
     volumes:
       - mailu-webmail:/data
       - mailu-override:/overrides:ro
