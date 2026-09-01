@@ -28,6 +28,19 @@ v1.2.0.
   your deployment reused it (rotating invalidates sessions and signed
   tokens, not mailboxes).
 
+### Fixed (found by the new CI)
+
+- **fetchmail shared the admin database volume.** fetchmail runs as its
+  own user (uid 101) and chowns its data directory at startup — on a
+  shared volume that clobbered the ownership the admin container needs,
+  and admin died on `/data/instance` with every fresh deployment.
+  fetchmail now has its own volume, matching upstream Mailu's layout.
+- **Fresh named volumes were unusable by the unprivileged containers**:
+  docker's first-mount copy-up leaves them root-owned while Mailu
+  2024.06 drops to uid 100. Each Mailu-image service now fixes the
+  ownership of its own volumes right before startup (a no-op on healthy
+  deployments).
+
 ### Changed
 
 - **All fourteen images pinned by `tag@sha256:digest`** in the compose
