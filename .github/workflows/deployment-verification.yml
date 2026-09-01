@@ -242,6 +242,12 @@ jobs:
       - name: Print Docker Compose services status
         run: docker ps
 
+      - name: Volume ownership diagnostics
+        run: |
+          sleep 20
+          docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" exec -T admin sh -c 'ls -ldn /data /dkim; ls -ln /data; id; grep mailu /etc/passwd' || true
+          docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" logs admin 2>&1 | head -20 || true
+
       - name: Wait for the Mailu admin UI through Traefik
         # The admin container refuses to start until its DNSSEC-validating
         # resolver works, so /admin answering through the chain (Traefik ->
