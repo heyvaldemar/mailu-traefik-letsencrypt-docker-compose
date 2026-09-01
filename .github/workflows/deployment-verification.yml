@@ -1,0 +1,284 @@
+name: Deployment Verification
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly rebuild to catch upstream image drift.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: deployment-verification-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  # Authenticated requests avoid the anonymous API rate limit that shared
+  # GitHub runners regularly hit (api.github.com answers 403 otherwise).
+  GH_API_TOKEN: ${{ github.token }}
+
+jobs:
+  lint:
+    name: Lint shell scripts and workflow YAML
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: actionlint (GitHub Actions workflow linting)
+        run: |
+          docker run --rm -v "$PWD:/mnt" -w /mnt \
+            rhysd/actionlint:1.7.12 \
+            -color
+
+  scan-trivy:
+    name: Scan pinned upstream image with Trivy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Findings surface in the Security tab for triage; they don't block CI.
+    continue-on-error: true
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      # Image refs are read from the compose file's x-images defaults at
+      # runtime — single source of truth.
+      fail-fast: false
+      matrix:
+        include:
+          - name: front
+            env_var: FRONT_IMAGE_TAG
+          - name: admin
+            env_var: ADMIN_IMAGE_TAG
+          - name: imap
+            env_var: IMAP_IMAGE_TAG
+          - name: smtp
+            env_var: SMTP_IMAGE_TAG
+          - name: antispam
+            env_var: ANTISPAM_IMAGE_TAG
+          - name: antivirus
+            env_var: ANTIVIRUS_IMAGE_TAG
+          - name: webmail
+            env_var: WEBMAIL_IMAGE_TAG
+          - name: traefik
+            env_var: TRAEFIK_IMAGE_TAG
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read pinned ${{ matrix.name }} image from the compose file
+        id: pin
+        env:
+          ENV_VAR: ${{ matrix.env_var }}
+        run: |
+          image="$(grep -oE "\\$\\{${ENV_VAR}:-[^}]+\\}" mailu-traefik-letsencrypt-docker-compose.yml | head -1 | sed -E "s/^\\$\\{${ENV_VAR}:-//; s/\\}$//")"
+          if [ -z "$image" ]; then
+            echo "${ENV_VAR} default not found in the compose x-images block" >&2
+            exit 1
+          fi
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Trivy scan of ${{ matrix.name }}
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.pin.outputs.image }}
+          format: sarif
+          output: trivy-${{ matrix.name }}.sarif
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF (${{ matrix.name }}) to GitHub Security
+        uses: github/codeql-action/upload-sarif@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
+        with:
+          sarif_file: trivy-${{ matrix.name }}.sarif
+          category: trivy-${{ matrix.name }}
+
+  check-pin-freshness:
+    name: Check pinned images for upstream drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Weekly cron + manual dispatch only: a new upstream release is not
+    # actionable inside an unrelated PR. On the cron the failure lands as a
+    # workflow-failure notification to the maintainer — a stale pin must
+    # not sit unnoticed. Dependabot cannot see these pins (they are compose
+    # interpolation defaults, not Dockerfile literals), so this job is the
+    # actual tracking mechanism.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Compare pinned digests against what each tag resolves to now
+        run: |
+          status=0
+          for var in FRONT_IMAGE_TAG ADMIN_IMAGE_TAG IMAP_IMAGE_TAG SMTP_IMAGE_TAG ANTISPAM_IMAGE_TAG ANTIVIRUS_IMAGE_TAG WEBMAIL_IMAGE_TAG TRAEFIK_IMAGE_TAG; do
+            pin="$(grep -oE "\\$\\{${var}:-[^}]+\\}" mailu-traefik-letsencrypt-docker-compose.yml | head -1 | sed -E "s/^\\$\\{${var}:-//; s/\\}$//")"
+            ref="${pin%%@*}"
+            pinned_digest="${pin##*@}"
+            current_digest="$(docker buildx imagetools inspect "$ref" --format '{{json .Manifest}}' | jq -r .digest)"
+            if [ "$pinned_digest" != "$current_digest" ]; then
+              echo "::error::${var} digest drift: pinned ${pinned_digest}, but ${ref} now resolves to ${current_digest}"
+              status=1
+            else
+              echo "${var} OK (${ref})"
+            fi
+          done
+          exit "$status"
+
+      - name: Compare pinned Mailu version against the latest release
+        run: |
+          pin="$(grep -oE '\$\{ADMIN_IMAGE_TAG:-[^}]+\}' mailu-traefik-letsencrypt-docker-compose.yml | head -1 | sed -E 's/^\$\{ADMIN_IMAGE_TAG:-//; s/\}$//')"
+          ref="${pin%%@*}"
+          pinned_version="${ref##*:}"
+          latest="$(curl -fsSL --retry 3 -H "Authorization: Bearer $GH_API_TOKEN" https://api.github.com/repos/Mailu/Mailu/releases/latest | jq -r .tag_name)"
+          if [ -z "$latest" ] || [ "$latest" = "null" ]; then
+            echo "::error::Could not determine the latest Mailu release from the GitHub API"
+            exit 1
+          fi
+          if [ "$pinned_version" != "$latest" ]; then
+            echo "::error::Mailu pin is behind: pinned ${pinned_version}, latest release is ${latest}"
+            exit 1
+          fi
+          echo "Mailu pin ${pinned_version} matches the latest release"
+
+      - name: Compare pinned Traefik minor against the latest release
+        run: |
+          pin="$(grep -oE '\$\{TRAEFIK_IMAGE_TAG:-[^}]+\}' mailu-traefik-letsencrypt-docker-compose.yml | head -1 | sed -E 's/^\$\{TRAEFIK_IMAGE_TAG:-//; s/\}$//')"
+          ref="${pin%%@*}"
+          pinned_minor="${ref##*:}"
+          latest="$(curl -fsSL --retry 3 -H "Authorization: Bearer $GH_API_TOKEN" https://api.github.com/repos/traefik/traefik/releases/latest | jq -r .tag_name)"
+          latest="${latest#v}"
+          if [ -z "$latest" ] || [ "$latest" = "null" ]; then
+            echo "::error::Could not determine the latest Traefik release from the GitHub API"
+            exit 1
+          fi
+          case "$latest" in
+            "$pinned_minor".*) echo "Traefik pin ${pinned_minor} matches the latest release line (${latest})" ;;
+            *) echo "::error::Traefik pin is behind: pinned minor ${pinned_minor}, latest release is ${latest}"; exit 1 ;;
+          esac
+
+  deploy-and-test:
+    name: docker compose up + Mailu admin/webmail/SMTP smoke
+    runs-on: ubuntu-latest
+    needs: lint
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    env:
+      NETWORK_TWO: traefik-network
+      DOCKER_COMPOSE_FILE: mailu-traefik-letsencrypt-docker-compose.yml
+      APP_HOSTNAME: mail.heyvaldemarmu.net
+      APP_TRAEFIK_HOSTNAME: traefik.mailu.heyvaldemarmu.net
+      COMPOSE_PROJECT_NAME: mailu
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Create the external Docker network
+        run: docker network create "$NETWORK_TWO" || true
+
+      - name: Generate test .env with ephemeral credentials
+        # The real .env is gitignored. CI generates throwaway credentials so
+        # `docker compose up` succeeds without committing secrets to the
+        # repo. No *_IMAGE_TAG values on purpose: the compose file's
+        # x-images defaults apply, so CI always tests exactly the pins the
+        # template ships to users who run it unmodified.
+        run: |
+          cat > .env <<EOF
+          TRAEFIK_ACME_EMAIL=ci@example.com
+          TRAEFIK_HOSTNAME=${APP_TRAEFIK_HOSTNAME}
+          TRAEFIK_BASIC_AUTH=traefikadmin:\$\$2y\$\$10\$\$sMzJfirKC75x/hVpiINeZOiSm.Jkity9cn4KwNkRvO7hSQVFc5FLO
+          MAILU_HOSTNAME=${APP_HOSTNAME}
+          MAILU_ADMIN_HOSTNAME=admin.mailu.heyvaldemarmu.net
+          MAILU_WEBDAV_HOSTNAME=dav.mailu.heyvaldemarmu.net
+          SECRET_KEY=$(openssl rand -hex 16)
+          DOMAIN=heyvaldemarmu.net
+          HOSTNAMES=${APP_HOSTNAME}
+          POSTMASTER=admin
+          TLS_FLAVOR=notls
+          INITIAL_ADMIN_ACCOUNT=admin
+          INITIAL_ADMIN_DOMAIN=heyvaldemarmu.net
+          INITIAL_ADMIN_PW=$(openssl rand -base64 24 | tr -d '/+=' | head -c 32)
+          INITIAL_ADMIN_MODE=update
+          WEB_ADMIN=/admin
+          WEB_WEBMAIL=/webmail
+          WEBROOT_REDIRECT=/webmail
+          ADMIN=true
+          WEBMAIL=roundcube
+          WEBDAV=radicale
+          ANTIVIRUS=clamav
+          SCAN_MACROS=true
+          FETCHMAIL_ENABLED=true
+          MESSAGE_SIZE_LIMIT=50000000
+          SUBNET=192.168.203.0/24
+          REDIS_ADDRESS=redis
+          TZ=UTC
+          EOF
+          echo "Generated ephemeral .env for CI run"
+
+      - name: Start up services using Docker Compose
+        run: docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" up -d
+
+      - name: Modify /etc/hosts for internal routing
+        run: |
+          echo "127.0.0.1 $APP_HOSTNAME" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 $APP_TRAEFIK_HOSTNAME" | sudo tee -a /etc/hosts
+
+      - name: Print Docker Compose services status
+        run: docker ps
+
+      - name: Wait for the Mailu admin UI through Traefik
+        # The admin container refuses to start until its DNSSEC-validating
+        # resolver works, so /admin answering through the chain (Traefik ->
+        # front -> admin) proves resolver, front routing, and the admin
+        # database in one signal. First start creates the initial admin
+        # account from .env.
+        run: |
+          # shellcheck disable=SC2016
+          timeout 12m bash -c 'while ! curl -skL -o /dev/null -w "%{http_code}" "https://$APP_HOSTNAME/admin/" | grep -qE "^(200|302)$"; do
+            echo "Waiting for the Mailu admin UI..."
+            sleep 10
+          done'
+          curl -skL "https://$APP_HOSTNAME/admin/" -o /dev/null -w "Mailu admin UI: %{http_code}\n"
+          curl -skL "https://$APP_HOSTNAME/webmail/" -o /dev/null -w "Webmail: %{http_code}\n"
+
+      - name: Verify the SMTP port answers through the Traefik TCP router
+        run: |
+          timeout 2m bash -c 'until timeout 5 bash -c ":> /dev/tcp/127.0.0.1/25"; do sleep 5; done'
+          banner="$(timeout 10 bash -c 'exec 3<>/dev/tcp/127.0.0.1/25; head -c 40 <&3')"
+          echo "SMTP banner: $banner"
+          case "$banner" in
+            220*) echo "SMTP answers through Traefik" ;;
+            *) echo "::error::Unexpected SMTP banner"; exit 1 ;;
+          esac
+
+      - name: Wait for the Traefik dashboard to be ready
+        run: |
+          # shellcheck disable=SC2016
+          timeout 5m bash -c 'while ! curl -fsSLk --write-out "%{http_code}" --output /dev/null "https://$APP_TRAEFIK_HOSTNAME" | grep -E "200|401"; do
+            echo "Waiting for the dashboard to be ready..."
+            sleep 10
+          done'
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" logs
+
+      - name: Shutdown Docker Compose services
+        if: always()
+        run: docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" down

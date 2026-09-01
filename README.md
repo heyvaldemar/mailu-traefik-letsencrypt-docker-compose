@@ -1,146 +1,80 @@
-# Mailu with Let's Encrypt Using Docker Compose
+# Mailu + Traefik + Let's Encrypt — Docker Compose
 
-📙 The complete installation guide is available on my [website](https://www.heyvaldemar.com/install-mailu-using-docker-compose/).
+[![Deployment Verification](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml/badge.svg?branch=main)](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-❗ Change variables in the `.env` to meet your requirements.
+This repository deploys a full **Mailu** mail server — SMTP (postfix), IMAP (dovecot), spam filtering (rspamd), antivirus (ClamAV), webmail (Roundcube), CalDAV/CardDAV (Radicale), admin UI — behind **Traefik**: HTTPS for the web hostnames via **Let's Encrypt**, raw TCP passthrough for the mail ports.
 
-To generate a 128-bit security key for the `SECRET_KEY` variable, use the following OpenSSL command:
+## Getting started
 
-`openssl rand -hex 16`
+Running a mail server is the deep end of self-hosting: you need forward and reverse DNS, MX/SPF/DKIM/DMARC records, and a hosting provider that allows outbound port 25. Read the [Mailu docs](https://mailu.io/2024.06/) alongside this template.
 
-💡 Note that the `.env` file should be in the same directory as `mailu-traefik-letsencrypt-docker-compose.yml`.
+```bash
+# 1. Clone
+git clone https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose
+cd mailu-traefik-letsencrypt-docker-compose
 
-Set up the following DNS and firewall configurations for our Mailu email server on yourdomain.com:
+# 2. Create the external Docker network (the rest are created by compose)
+docker network create traefik-network
 
-## DNS Records
+# 3. Copy the environment template and fill it in — this file is BOTH the
+#    compose variables and the Mailu application config (env_file)
+cp .env.example .env
+$EDITOR .env
 
-### A Records
+# 4. Deploy
+docker compose -f mailu-traefik-letsencrypt-docker-compose.yml -p mailu up -d
+```
 
-- `mailu.yourdomain.com` → `[Server IP]`
-- `admin.mailu.yourdomain.com` → `[Server IP]`
-- `webmail.mailu.yourdomain.com` → `[Server IP]`
-- `webdav.mailu.yourdomain.com` → `[Server IP]`
-- `traefik.mailu.yourdomain.com` → `[Server IP]`
+First start takes a few minutes (rspamd and ClamAV load their databases; the admin container waits for the DNSSEC-validating resolver). Then `https://${MAILU_HOSTNAME}/admin` accepts the initial admin account from `.env`.
 
-### MX Record
+### What success looks like
 
-- `yourdomain.com MX` → `mailu.yourdomain.com (Priority: 10)`
+```bash
+docker compose -f mailu-traefik-letsencrypt-docker-compose.yml -p mailu ps
+curl -fskL -o /dev/null -w "%{http_code}\n" "https://${MAILU_HOSTNAME}/admin/"    # 200
+printf "" | nc -w5 YOUR_SERVER 25   # 220 banner
+```
 
-### SPF Record
+### Common first-deploy issues
 
-- `TXT yourdomain.com` → `v=spf1 a mx ~all`
+- **admin restarts complaining about the DNS resolver.** The stack ships its own unbound resolver because Mailu requires DNSSEC validation — if your host firewall blocks outbound DNS (udp/53) the whole stack stays down. Fix the network, not the container.
+- **Mail clients can't connect over TLS (465/993/995).** Traefik passes those ports through as raw TCP; the `front` container serves TLS itself from the `mailu-certificates` volume (`TLS_FLAVOR=mail`). Export Traefik's certificates with a certs-dumper or mount your own `cert.pem`/`key.pem` there.
+- **Outbound mail bounces or times out.** Your provider filters port 25 — request unblocking or use a relay (`RELAYHOST`).
+- **`docker compose up` fails with `set in .env`.** A required variable is empty; the error names it.
 
-### DKIM Record
+## Supply chain trust
 
-- `TXT mail._domainkey.yourdomain.com` → `(DKIM Key)`
+Fourteen images — the Mailu 2024.06.58 set from ghcr.io, [`clamav/clamav-debian`](https://hub.docker.com/r/clamav/clamav-debian), [`apache/tika`](https://hub.docker.com/r/apache/tika), [`redis`](https://hub.docker.com/_/redis), [`traefik`](https://hub.docker.com/_/traefik) — pinned to `tag@sha256:<digest>` as interpolation defaults in the compose `x-images` block. `git pull` alone delivers the tested combination; an `*_IMAGE_TAG` variable in `.env` overrides deliberately.
 
-### DMARC Record
+The weekly `check-pin-freshness` CI job re-resolves each pin against its registry and compares the pinned Mailu and Traefik versions against the latest upstream releases. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
 
-- `TXT _dmarc.yourdomain.com` → `v=DMARC1; p=none; rua=mailto:admin@yourdomain.com`
+## Production checklist
 
-### PTR Record
+- [ ] **DNS first**: MX to `MAILU_HOSTNAME`, matching PTR record, SPF, DMARC — and generate DKIM in the admin UI, then publish the key.
+- [ ] **Strong secrets** — `SECRET_KEY` (16 hex bytes) and the initial admin password; regenerate the Traefik dashboard hash.
+- [ ] **Mail-port TLS**: get certificates into the `mailu-certificates` volume before pointing clients at 465/993.
+- [ ] **Back up the volumes** — `mailu-mail` (mailboxes), `mailu-data` (admin DB), and `mailu-dkim` at minimum.
+- [ ] **Watch the weekly freshness run** — mail software is a favorite target; the pin-lag alarm is your patch signal.
 
-- `[Server IP]` → `mailu.yourdomain.com`
+## Testing
 
-### Firewall Ports to Open
+The [Deployment Verification](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every Monday at 06:00 UTC: actionlint, Trivy scans of the pinned images, the weekly freshness check, and a deploy-and-test job that boots all fourteen services with ephemeral credentials and requires the admin UI and webmail through Traefik plus a live SMTP banner through the TCP router.
 
-- **SMTP:** 25, 465, 587
-- **IMAP/POP3:** 143, 993, 110, 995
-- **Sieve:** 4190
-- **Web Traffic:** 80, 443
+## Security Notes
 
-Replace `[Server IP]` and `(DKIM Key)` with the appropriate values for your server.
+- Credentials are read from `.env` at deploy time; `.env` is gitignored and compose fails fast on missing required variables.
+- **Pre-rotation advisory.** Releases before v1.0.0 (2026-09-01) tracked a `.env` with a real `SECRET_KEY`. Rotate it if your deployment reused it — sessions and signed tokens are invalidated, mailboxes are untouched.
+- The oletools and tika helper networks are `internal: true`; only `front` and Traefik face the outside.
 
-Create networks for your services before deploying the configuration using the commands:
+---
 
-`docker network create traefik-network`
-
-Deploy Mailu using Docker Compose:
-
-`docker compose -f mailu-traefik-letsencrypt-docker-compose.yml -p mailu up -d`
-
-## Administrator Account
-
-Set password for administrator account. Replace `PASSWORD` with a strong, secure password:
-
-`docker compose -p mailu exec admin flask mailu admin admin yourdomain.com PASSWORD`
-
-## Author
-
-hey everyone,
-
-💾 I’ve been in the IT game for over 20 years, cutting my teeth with some big names like [IBM](https://www.linkedin.com/in/heyvaldemar/), [Thales](https://www.linkedin.com/in/heyvaldemar/), and [Amazon](https://www.linkedin.com/in/heyvaldemar/). These days, I wear the hat of a DevOps Consultant and Team Lead, but what really gets me going is Docker and container technology - I’m kind of obsessed!
-
-💛 I have my own IT [blog](https://www.heyvaldemar.com/), where I’ve built a [community](https://discord.gg/AJQGCCBcqf) of DevOps enthusiasts who share my love for all things Docker, containers, and IT technologies in general. And to make sure everyone can jump on this awesome DevOps train, I write super detailed guides (seriously, they’re foolproof!) that help even newbies deploy and manage complex IT solutions.
-
-🚀 My dream is to empower every single person in the DevOps community to squeeze every last drop of potential out of Docker and container tech.
-
-🐳 As a [Docker Captain](https://www.docker.com/captains/vladimir-mikhalev/), I’m stoked to share my knowledge, experiences, and a good dose of passion for the tech. My aim is to encourage learning, innovation, and growth, and to inspire the next generation of IT whizz-kids to push Docker and container tech to its limits.
-
-Let’s do this together!
-
-## My 2D Portfolio
-
-🕹️ Click into [sre.gg](https://www.sre.gg/) — my virtual space is a 2D pixel-art portfolio inviting you to interact with elements that encapsulate the milestones of my DevOps career.
-
-## My Courses
-
-🎓 Dive into my [comprehensive IT courses](https://www.heyvaldemar.com/courses/) designed for enthusiasts and professionals alike. Whether you're looking to master Docker, conquer Kubernetes, or advance your DevOps skills, my courses provide a structured pathway to enhancing your technical prowess.
-
-🔑 [Each course](https://www.udemy.com/user/heyvaldemar/) is built from the ground up with real-world scenarios in mind, ensuring that you gain practical knowledge and hands-on experience. From beginners to seasoned professionals, there's something here for everyone to elevate their IT skills.
-
-## My Services
-
-💼 Take a look at my [service catalog](https://www.heyvaldemar.com/services/) and find out how we can make your technological life better. Whether it's increasing the efficiency of your IT infrastructure, advancing your career, or expanding your technological horizons — I'm here to help you achieve your goals. From DevOps transformations to building gaming computers — let's make your technology unparalleled!
-
-## Patreon Exclusives
-
-🏆 Join my [Patreon](https://www.patreon.com/heyvaldemar) and dive deep into the world of Docker and DevOps with exclusive content tailored for IT enthusiasts and professionals. As your experienced guide, I offer a range of membership tiers designed to suit everyone from newbies to IT experts.
-
-## My Recommendations
-
-📕 Check out my collection of [essential DevOps books](https://kit.co/heyvaldemar/essential-devops-books)\
-🖥️ Check out my [studio streaming and recording kit](https://kit.co/heyvaldemar/my-studio-streaming-and-recording-kit)\
-📡 Check out my [streaming starter kit](https://kit.co/heyvaldemar/streaming-starter-kit)
-
-## Follow Me
-
-🎬 [YouTube](https://www.youtube.com/channel/UCf85kQ0u1sYTTTyKVpxrlyQ?sub_confirmation=1)\
-🐦 [X / Twitter](https://twitter.com/heyvaldemar)\
-🎨 [Instagram](https://www.instagram.com/heyvaldemar/)\
-🐘 [Mastodon](https://mastodon.social/@heyvaldemar)\
-🧵 [Threads](https://www.threads.net/@heyvaldemar)\
-🎸 [Facebook](https://www.facebook.com/heyvaldemarFB/)\
-🧊 [Bluesky](https://bsky.app/profile/heyvaldemar.bsky.social)\
-🎥 [TikTok](https://www.tiktok.com/@heyvaldemar)\
-💻 [LinkedIn](https://www.linkedin.com/in/heyvaldemar/)\
-📣 [daily.dev Squad](https://app.daily.dev/squads/devopscompass)\
-🧩 [LeetCode](https://leetcode.com/u/heyvaldemar/)\
-🐈 [GitHub](https://github.com/heyvaldemar)
-
-## Community of IT Experts
-
-👾 [Discord](https://discord.gg/AJQGCCBcqf)
-
-## Refill My Coffee Supplies
-
-💖 [PayPal](https://www.paypal.com/paypalme/heyvaldemarCOM)\
-🏆 [Patreon](https://www.patreon.com/heyvaldemar)\
-💎 [GitHub](https://github.com/sponsors/heyvaldemar)\
-🥤 [BuyMeaCoffee](https://www.buymeacoffee.com/heyvaldemar)\
-🍪 [Ko-fi](https://ko-fi.com/heyvaldemar)
-
-🌟 **Bitcoin (BTC):** bc1q2fq0k2lvdythdrj4ep20metjwnjuf7wccpckxc\
-🔹 **Ethereum (ETH):** 0x76C936F9366Fad39769CA5285b0Af1d975adacB8\
-🪙 **Binance Coin (BNB):** bnb1xnn6gg63lr2dgufngfr0lkq39kz8qltjt2v2g6\
-💠 **Litecoin (LTC):** LMGrhx8Jsx73h1pWY9FE8GB46nBytjvz8g
+## About the maintainer
 
 <div align="center">
 
-### Show some 💜 by starring some of the [repositories](https://github.com/heyValdemar?tab=repositories)!
+**Maintained by [Vladimir Mikhalev](https://github.com/heyvaldemar)** — Docker Captain · IBM Champion · AWS Community Builder
 
-![octocat](https://user-images.githubusercontent.com/10498744/210113490-e2fad07f-4488-4da8-a656-b9abbdd8cb26.gif)
+[YouTube](https://www.youtube.com/channel/UCf85kQ0u1sYTTTyKVpxrlyQ?sub_confirmation=1) · [Blog](https://heyvaldemar.com) · [LinkedIn](https://www.linkedin.com/in/heyvaldemar/)
 
 </div>
-
-![footer](https://user-images.githubusercontent.com/10498744/210157572-1fca0242-8af2-46a6-bfa3-666ffd40ebde.svg)
