@@ -57,6 +57,24 @@ volumes:
   traefik-certificates:
 
 services:
+  volume-permissions:
+    # Mailu 2024.06 images drop privileges to uid/gid 1000, but fresh
+    # named volumes are created root-owned — without this one-shot chown
+    # the admin container dies on its sqlite database and DKIM store.
+    image: *redis-image
+    user: "0:0"
+    entrypoint: ["sh", "-c", "chown -R 1000:1000 /vols/* && echo volumes ready"]
+    volumes:
+      - mailu-data:/vols/data
+      - mailu-dkim:/vols/dkim
+      - mailu-mail:/vols/mail
+      - mailu-mailqueue:/vols/mailqueue
+      - mailu-filter:/vols/filter
+      - mailu-dav:/vols/dav
+      - mailu-webmail:/vols/webmail
+      - mailu-override:/vols/override
+    restart: "no"
+
   redis:
     image: *redis-image
     env_file: .env
@@ -210,8 +228,12 @@ services:
       - "traefik.docker.network=traefik-network"
     restart: unless-stopped
     depends_on:
-      - redis
-      - resolver
+      redis:
+        condition: service_started
+      resolver:
+        condition: service_started
+      volume-permissions:
+        condition: service_completed_successfully
 
   imap:
     image: *imap-image
