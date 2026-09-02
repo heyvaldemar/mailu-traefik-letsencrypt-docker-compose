@@ -228,6 +228,8 @@ jobs:
           SUBNET=192.168.203.0/24
           REDIS_ADDRESS=redis
           TZ=UTC
+          MAILU_BACKUP_INIT_SLEEP=15s
+          MAILU_BACKUP_INTERVAL=60s
           EOF
           echo "Generated ephemeral .env for CI run"
 
@@ -267,6 +269,20 @@ jobs:
             220*) echo "SMTP answers through Traefik" ;;
             *) echo "::error::Unexpected SMTP banner"; exit 1 ;;
           esac
+
+      - name: Verify a backup is produced and valid
+        # Log-driven: the file named in a 'backup OK' line is complete by
+        # definition, so this never races an archive still being written.
+        run: |
+          # shellcheck disable=SC2016
+          timeout 6m bash -c 'until docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" logs backups 2>/dev/null | grep -qE "Data backup (OK|FAILED)"; do echo "Waiting for the first backup cycle..."; sleep 10; done'
+          db=$(docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" logs backups 2>/dev/null | grep "Database backup OK" | tail -1 | sed -E 's/.*Database backup OK: ([^ ]+) .*/\1/')
+          [ -n "$db" ] || { echo "::error::no 'Database backup OK' line"; exit 1; }
+          docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" exec -T backups sh -c "gunzip -c '$db' > /tmp/check.db && python3 -c \"import sqlite3; c=sqlite3.connect('/tmp/check.db'); r=c.execute('pragma integrity_check').fetchone()[0]; print('integrity:', r); raise SystemExit(0 if r=='ok' else 1)\"" && echo "Database backup valid: $db"
+          data=$(docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" logs backups 2>/dev/null | grep "Data backup OK" | tail -1 | sed -E 's/.*Data backup OK: ([^ ]+) .*/\1/')
+          [ -n "$data" ] || { echo "::error::no 'Data backup OK' line - the data archive failed"; exit 1; }
+          docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" exec -T backups sh -c "tar -tzf '$data' > /dev/null" && echo "Data backup valid: $data"
+          docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" logs backups 2>/dev/null | grep -i "backup FAILED" && { echo "::error::the backups log reports a failure"; exit 1; } || true
 
       - name: Wait for the Traefik dashboard to be ready
         run: |
