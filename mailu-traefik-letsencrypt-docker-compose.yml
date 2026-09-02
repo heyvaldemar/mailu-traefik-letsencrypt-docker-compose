@@ -60,6 +60,16 @@ volumes:
 services:
   redis:
     image: *redis-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_REDIS_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_REDIS_MEMORY_LIMIT:-256m}
+          cpus: "${MAILU_REDIS_CPU_LIMIT:-0.5}"
+        reservations:
+          memory: ${MAILU_REDIS_MEMORY_RESERVATION:-32m}
+          cpus: "${MAILU_REDIS_CPU_RESERVATION:-0.1}"
     env_file: .env
     volumes:
       - mailu-redis:/data
@@ -73,6 +83,16 @@ services:
 
   resolver:
     image: *resolver-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_RESOLVER_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_RESOLVER_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_RESOLVER_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_RESOLVER_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_RESOLVER_CPU_RESERVATION:-0.25}"
     env_file: .env
     networks:
       mailu-network:
@@ -81,6 +101,16 @@ services:
 
   front:
     image: *front-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_FRONT_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_FRONT_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_FRONT_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_FRONT_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_FRONT_CPU_RESERVATION:-0.25}"
     env_file: .env
     volumes:
       - mailu-certificates:/certs
@@ -177,6 +207,16 @@ services:
 
   admin:
     image: *admin-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_ADMIN_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_ADMIN_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_ADMIN_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_ADMIN_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_ADMIN_CPU_RESERVATION:-0.25}"
     env_file: .env
     # The image starts as root and drops to the mailu user (uid 100) —
     # but docker's first-mount copy-up leaves fresh named volumes
@@ -223,6 +263,16 @@ services:
 
   imap:
     image: *imap-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_IMAP_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_IMAP_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_IMAP_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_IMAP_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_IMAP_CPU_RESERVATION:-0.25}"
     env_file: .env
     # The image starts as root and drops to the mailu user (uid 100) —
     # but docker's first-mount copy-up leaves fresh named volumes
@@ -245,6 +295,16 @@ services:
 
   smtp:
     image: *smtp-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_SMTP_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_SMTP_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_SMTP_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_SMTP_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_SMTP_CPU_RESERVATION:-0.25}"
     env_file: .env
     # The image starts as root and drops to the mailu user (uid 100) —
     # but docker's first-mount copy-up leaves fresh named volumes
@@ -265,6 +325,16 @@ services:
 
   oletools:
     image: *oletools-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_OLETOOLS_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_OLETOOLS_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_OLETOOLS_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_OLETOOLS_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_OLETOOLS_CPU_RESERVATION:-0.25}"
     env_file: .env
     hostname: olefy
     networks:
@@ -277,6 +347,16 @@ services:
 
   fts-attachments:
     image: *fts-attachments-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_FTS_ATTACHMENTS_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_FTS_ATTACHMENTS_MEMORY_LIMIT:-1g}
+          cpus: "${MAILU_FTS_ATTACHMENTS_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_FTS_ATTACHMENTS_MEMORY_RESERVATION:-128m}
+          cpus: "${MAILU_FTS_ATTACHMENTS_CPU_RESERVATION:-0.25}"
     env_file: .env
     hostname: tika
     networks:
@@ -295,6 +375,16 @@ services:
 
   antispam:
     image: *antispam-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_ANTISPAM_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_ANTISPAM_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_ANTISPAM_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_ANTISPAM_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_ANTISPAM_CPU_RESERVATION:-0.25}"
     env_file: .env
     # The image starts as root and drops to the mailu user (uid 100) —
     # but docker's first-mount copy-up leaves fresh named volumes
@@ -321,6 +411,16 @@ services:
 
   antivirus:
     image: *antivirus-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_ANTIVIRUS_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_ANTIVIRUS_MEMORY_LIMIT:-2g}
+          cpus: "${MAILU_ANTIVIRUS_CPU_LIMIT:-2.0}"
+        reservations:
+          memory: ${MAILU_ANTIVIRUS_MEMORY_RESERVATION:-256m}
+          cpus: "${MAILU_ANTIVIRUS_CPU_RESERVATION:-0.5}"
     env_file: .env
     volumes:
       - mailu-filter:/var/lib/clamav
@@ -336,6 +436,16 @@ services:
 
   webdav:
     image: *webdav-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_WEBDAV_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_WEBDAV_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_WEBDAV_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_WEBDAV_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_WEBDAV_CPU_RESERVATION:-0.25}"
     env_file: .env
     # The image starts as root and drops to the mailu user (uid 100) —
     # but docker's first-mount copy-up leaves fresh named volumes
@@ -374,6 +484,16 @@ services:
 
   fetchmail:
     image: *fetchmail-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_FETCHMAIL_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_FETCHMAIL_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_FETCHMAIL_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_FETCHMAIL_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_FETCHMAIL_CPU_RESERVATION:-0.25}"
     env_file: .env
     volumes:
       # Own volume on purpose: fetchmail runs as its own user (uid 101)
@@ -393,6 +513,16 @@ services:
 
   webmail:
     image: *webmail-image
+    # Resource limits as .env-overridable defaults (e.g. MAILU_WEBMAIL_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${MAILU_WEBMAIL_MEMORY_LIMIT:-512m}
+          cpus: "${MAILU_WEBMAIL_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${MAILU_WEBMAIL_MEMORY_RESERVATION:-64m}
+          cpus: "${MAILU_WEBMAIL_CPU_RESERVATION:-0.25}"
     env_file: .env
     # The image starts as root and drops to the mailu user (uid 100) —
     # but docker's first-mount copy-up leaves fresh named volumes
@@ -434,6 +564,16 @@ services:
 
   traefik:
     image: *traefik-image
+    # Resource limits as .env-overridable defaults (e.g. TRAEFIK_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${TRAEFIK_MEMORY_LIMIT:-256m}
+          cpus: "${TRAEFIK_CPU_LIMIT:-0.5}"
+        reservations:
+          memory: ${TRAEFIK_MEMORY_RESERVATION:-64m}
+          cpus: "${TRAEFIK_CPU_RESERVATION:-0.1}"
     command:
       # Set the log level (DEBUG, INFO, WARN, ERROR)
       - "--log.level=${TRAEFIK_LOG_LEVEL:-WARN}"
