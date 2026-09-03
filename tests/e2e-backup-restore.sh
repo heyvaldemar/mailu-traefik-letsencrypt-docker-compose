@@ -48,7 +48,7 @@ DB_BASE="main"
 # exiting early sends docker logs a SIGPIPE and the whole pipeline fails.
 
 BACKUPS_CONTAINER="$(docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" ps -aq backups | head -n 1)"
-APP_CONTAINER="$(docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" ps -aq mailu | head -n 1)"
+APP_CONTAINER="$(docker compose -f "$DOCKER_COMPOSE_FILE" -p "$COMPOSE_PROJECT_NAME" ps -aq admin | head -n 1)"
 [[ -n "$BACKUPS_CONTAINER" ]] || { echo "error: backups container not found" >&2; exit 1; }
 [[ -n "$APP_CONTAINER" ]] || { echo "error: application container not found" >&2; exit 1; }
 

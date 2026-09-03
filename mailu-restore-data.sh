@@ -10,7 +10,7 @@
 # 5. **Start Service**: mailu is started again.
 # Make it executable once: `chmod +x mailu-restore-data.sh`
 
-APP_CONTAINER="$(docker compose -p mailu ps -q mailu)"
+APP_CONTAINER="$(docker compose -p mailu ps -q admin)"
 BACKUPS_CONTAINER="$(docker compose -p mailu ps -q backups)"
 BACKUP_PATH="/srv/mailu/backups"
 DB_NAME="mailu-database-backup"
