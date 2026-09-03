@@ -47,7 +47,7 @@ printf "" | nc -w5 YOUR_SERVER 25   # 220 banner
 
 Fourteen images — the Mailu 2024.06.58 set from ghcr.io, [`clamav/clamav-debian`](https://hub.docker.com/r/clamav/clamav-debian), [`apache/tika`](https://hub.docker.com/r/apache/tika), [`redis`](https://hub.docker.com/_/redis), [`traefik`](https://hub.docker.com/_/traefik) — pinned to `tag@sha256:<digest>` as interpolation defaults in the compose `x-images` block. `git pull` alone delivers the tested combination; an `*_IMAGE_TAG` variable in `.env` overrides deliberately.
 
-The weekly `check-pin-freshness` CI job re-resolves each pin against its registry and compares the pinned Mailu and Traefik versions against the latest upstream releases. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
+The daily `check-pin-freshness` CI job re-resolves each pin against its registry and compares the pinned Mailu and Traefik versions against the latest upstream releases. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
 
 ## Production checklist
 
@@ -102,7 +102,7 @@ docker compose -p mailu exec backups ls -la /srv/mailu/backups/
 
 ## Testing
 
-The [Deployment Verification](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every Monday at 06:00 UTC: actionlint, Trivy scans of the pinned images, the weekly freshness check, and a deploy-and-test job that boots all fourteen services with ephemeral credentials and requires the admin UI and webmail through Traefik plus a live SMTP banner through the TCP router.
+The [Deployment Verification](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every day at 06:00 UTC: actionlint, Trivy scans of the pinned images, the weekly freshness check, and a deploy-and-test job that boots all fourteen services with ephemeral credentials and requires the admin UI and webmail through Traefik plus a live SMTP banner through the TCP router.
 
 ## Security Notes
 
