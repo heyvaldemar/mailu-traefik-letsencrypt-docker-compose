@@ -26,7 +26,7 @@ _(no unreleased changes yet)_
 
 ### Added
 
-- **`tests/e2e-backup-restore.sh`** — scenarios against the live stack,
+- **`tests/e2e-backup-restore.sh`**: scenarios against the live stack,
   run by CI on every push: the required-variable guard fires, a backup
   set is produced, the archive is readable, the database copy passes `PRAGMA integrity_check`, a cycle that cannot
   write its archive is reported as `FAILED`, **restore genuinely
@@ -46,7 +46,7 @@ _(no unreleased changes yet)_
 ### Added
 
 - **A `backups` service** for the admin database (users, domains, aliases), the DKIM keys and every mailbox: on a loop it takes a consistent copy of each SQLite database (`main.db`) through Python's `sqlite3` backup API - no application stop - and a `tar.gz` of the rest of the data directory (live database files excluded), logs `OK` or `FAILED` per artefact (a failed archive is kept as `.failed`), and prunes only its own files. Schedule knobs (`MAILU_BACKUP_INIT_SLEEP`, `MAILU_BACKUP_INTERVAL`, `MAILU_BACKUP_PRUNE_DAYS`, path and names) have defaults listed in `.env.example`.
-- **`mailu-restore-data.sh`** — interactive restore of a backup set: stops mailu, unpacks the data archive, restores each database copy, starts mailu.
+- **`mailu-restore-data.sh`**: interactive restore of a backup set: stops mailu, unpacks the data archive, restores each database copy, starts mailu.
 - CI waits for the first backup cycle and proves the archives are readable and the database copy passes `PRAGMA integrity_check`.
 
 ## [1.2.0] - 2026-09-02
@@ -66,7 +66,7 @@ _(no unreleased changes yet)_
 
 ### Added
 
-- **`update.sh`** — unattended updates to the newest tagged release,
+- **`update.sh`**: unattended updates to the newest tagged release,
   and nothing else: a tag is cut only after CI has booted the pinned
   images and passed the smoke tests, so "update to the latest tag" means
   "update to a combination a machine has already run". It refuses to
@@ -83,20 +83,20 @@ v1.2.0.
 ### Fixed (the template was undeployable as published)
 
 - **The entire Mailu configuration lived in an untracked `.env`** that
-  every service loads via `env_file:` — a fresh clone could not start at
+  every service loads via `env_file:`. A fresh clone could not start at
   all, and the README documented almost none of it. `.env.example` now
   carries the full contract: Traefik settings, the three routed
   hostnames, and the Mailu application config (SECRET_KEY, DOMAIN,
   HOSTNAMES, TLS_FLAVOR, the initial admin account, and the commonly
   tuned options).
-- The tracked `.env` also carried a real `SECRET_KEY` — rotate it if
+- The tracked `.env` also carried a real `SECRET_KEY`. Rotate it if
   your deployment reused it (rotating invalidates sessions and signed
   tokens, not mailboxes).
 
 ### Fixed (found by the new CI)
 
 - **fetchmail shared the admin database volume.** fetchmail runs as its
-  own user (uid 101) and chowns its data directory at startup — on a
+  own user (uid 101) and chowns its data directory at startup, on a
   shared volume that clobbered the ownership the admin container needs,
   and admin died on `/data/instance` with every fresh deployment.
   fetchmail now has its own volume, matching upstream Mailu's layout.
@@ -111,7 +111,7 @@ v1.2.0.
 - **All fourteen images pinned by `tag@sha256:digest`** in the compose
   `x-images` block: Mailu 2024.06.58 across the Mailu images, the
   antivirus image moved to `clamav/clamav-debian:1.4` and full-text
-  attachments to `apache/tika` (matching upstream Mailu 2024.06 — the
+  attachments to `apache/tika` (matching upstream Mailu 2024.06, the
   old `ghcr.io/mailu/clamav` and `fts-attachments` image names do not
   exist for this release), Redis 7.4, Traefik 3.7 (3.2's Docker client
   cannot talk to Docker Engine 29).
