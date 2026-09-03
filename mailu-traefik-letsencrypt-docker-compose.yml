@@ -84,6 +84,9 @@ services:
 
   resolver:
     image: *resolver-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_RESOLVER_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -102,6 +105,9 @@ services:
 
   front:
     image: *front-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_FRONT_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -208,6 +214,9 @@ services:
 
   admin:
     image: *admin-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_ADMIN_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -264,6 +273,9 @@ services:
 
   imap:
     image: *imap-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_IMAP_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -296,6 +308,9 @@ services:
 
   smtp:
     image: *smtp-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_SMTP_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -326,6 +341,9 @@ services:
 
   oletools:
     image: *oletools-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_OLETOOLS_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -348,6 +366,9 @@ services:
 
   fts-attachments:
     image: *fts-attachments-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_FTS_ATTACHMENTS_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -376,6 +397,9 @@ services:
 
   antispam:
     image: *antispam-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_ANTISPAM_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -412,6 +436,9 @@ services:
 
   antivirus:
     image: *antivirus-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_ANTIVIRUS_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -437,6 +464,9 @@ services:
 
   webdav:
     image: *webdav-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_WEBDAV_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -485,6 +515,9 @@ services:
 
   fetchmail:
     image: *fetchmail-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_FETCHMAIL_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -514,6 +547,9 @@ services:
 
   webmail:
     image: *webmail-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
     # Resource limits as .env-overridable defaults (e.g. MAILU_WEBMAIL_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -565,6 +601,16 @@ services:
 
   traefik:
     image: *traefik-image
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
+    # Drop every Linux capability; add back only what this image's
+    # entrypoint needs (bind :80/:443, chown its data directory, drop to
+    # its service user).
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
     # Resource limits as .env-overridable defaults (e.g. TRAEFIK_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -671,6 +717,18 @@ services:
 
   backups:
     image: python:3.13-alpine@sha256:7415fbc3c9e4979cc717d92377ab2bc7b2b4a2af1ac03cc52b5f3f88efedaf3a
+    # Hardening: no privilege escalation via setuid binaries
+    security_opt:
+      - no-new-privileges:true
+    # Drop every Linux capability; add back only what this image's
+    # entrypoint needs (bind :80/:443, chown its data directory, drop to
+    # its service user).
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
     # Resource limits as .env-overridable defaults (e.g. MAILU_BACKUPS_MEMORY_LIMIT=2g);
     # the override survives every git pull.
     deploy:
@@ -707,7 +765,9 @@ services:
           DATA_FILE="$$MAILU_BACKUPS_PATH/$$MAILU_DATA_BACKUP_NAME-$$STAMP.tar.gz"
           echo "[$$(date -Iseconds)] Starting data backup to $$DATA_FILE"
           tar -C / --exclude='data/main.db' --exclude='data/main.db-wal' --exclude='data/main.db-shm' -zcpf "$$DATA_FILE" data extra/mail extra/dkim; RC=$$?
-          if [ "$$RC" -eq 0 ] || [ "$$RC" -eq 1 ]; then
+          # BusyBox tar exits 1 for everything from "file changed" to "cannot
+          # write", so the exit code proves nothing: verify the archive itself.
+          if [ "$$RC" -le 1 ] && [ -f "$$DATA_FILE" ] && gzip -t "$$DATA_FILE" 2>/dev/null; then
             echo "[$$(date -Iseconds)] Data backup OK: $$DATA_FILE ($$(stat -c %s "$$DATA_FILE") bytes)"
           else
             echo "[$$(date -Iseconds)] Data backup FAILED - partial file kept as $$DATA_FILE.failed for diagnosis" >&2
