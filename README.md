@@ -3,7 +3,7 @@
 [![Deployment Verification](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml/badge.svg?branch=main)](https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository deploys a full **Mailu** mail server (SMTP (postfix), IMAP (dovecot), spam filtering (rspamd), antivirus (ClamAV), webmail (Roundcube), CalDAV/CardDAV (Radicale), admin UI) behind **Traefik**: HTTPS for the web hostnames via **Let's Encrypt**, raw TCP passthrough for the mail ports.
+This repository deploys a full Mailu mail server (SMTP (postfix), IMAP (dovecot), spam filtering (rspamd), antivirus (ClamAV), webmail (Roundcube), CalDAV/CardDAV (Radicale), admin UI) behind Traefik: HTTPS for the web hostnames via Let's Encrypt, raw TCP passthrough for the mail ports.
 
 ## Getting started
 
@@ -119,7 +119,7 @@ chmod +x tests/e2e-backup-restore.sh
 ./tests/e2e-backup-restore.sh
 ```
 
-## Security Notes
+## Security notes
 
 - Credentials are read from `.env` at deploy time; `.env` is gitignored and compose fails fast on missing required variables.
 - **Pre-rotation advisory.** Releases before v1.0.0 (2026-09-01) tracked a `.env` with a real `SECRET_KEY`. Rotate it if your deployment reused it: sessions and signed tokens are invalidated, mailboxes are untouched.
