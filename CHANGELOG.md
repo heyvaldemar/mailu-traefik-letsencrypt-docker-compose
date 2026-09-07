@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _(no unreleased changes yet)_
 
+## [1.7.1] - 2026-09-06
+
+### Fixed
+
+- **Six of the fourteen pinned images were never compared against the
+  registry.** The freshness job iterated a list of variable names written by
+  hand, and `FETCHMAIL`, `FTS_ATTACHMENTS`, `OLETOOLS`, `REDIS`, `RESOLVER`
+  and `WEBDAV` were not on it. Every one is a digest pin, so the tag it names
+  can be repushed under the same version and nothing would say so. One of them
+  follows `apache/tika:latest-full`, a tag that moves by design, frozen at a
+  digest nobody was watching. All six are current as of today, which is luck
+  rather than a result.
+
+### Changed
+
+- **The job enumerates the pins out of the compose file instead of naming
+  them.** A pin that exists is a pin that is watched, and a list cannot fall
+  behind the file it describes. An image built from source is skipped rather
+  than looked up under a name no registry serves.
+
 ## [1.7.0] - 2026-09-04
 
 ### Fixed
@@ -173,7 +193,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.4.0...v1.5.0
