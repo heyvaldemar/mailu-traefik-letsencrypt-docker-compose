@@ -201,7 +201,7 @@ jobs:
     name: docker compose up + Mailu admin/webmail/SMTP smoke
     runs-on: ubuntu-latest
     needs: lint
-    timeout-minutes: 40
+    timeout-minutes: 50
     permissions:
       contents: read
 
@@ -261,6 +261,11 @@ jobs:
           echo "Generated ephemeral .env for CI run"
 
       - name: Upgrade drill — the previous release comes up first, on the volumes this run will upgrade
+        env:
+          # clamav downloads its signature database on first start, hundreds of
+          # megabytes, and reports unhealthy until it has. The smoke below does not
+          # wait on it either; the mail path is what this stack is judged by.
+          UPGRADE_DRILL_IGNORE: antivirus
         # A fresh stack proves the new image starts. It proves nothing about the
         # data a deployed host already has: whether the new database image accepts
         # the old data directory, whether the application's migrations run on a
@@ -285,10 +290,13 @@ jobs:
           docker compose -f .upgrade-drill-previous.yml -p "$COMPOSE_PROJECT_NAME" up -d
           # Healthy means: every container is running and healthy (or running
           # with no health check), or exited 0 (a one-shot init container).
+          # UPGRADE_DRILL_IGNORE names services the smoke below does not wait on
+          # either - a container whose first start is a long download, with a
+          # health check that stays red until it finishes.
           bad=""
           for _ in $(seq 1 60); do
             bad="$(docker compose -f .upgrade-drill-previous.yml -p "$COMPOSE_PROJECT_NAME" ps -a --format json \
-              | jq -rs '[.[] | select((.State == "running" and (.Health == "" or .Health == "healthy")) or (.State == "exited" and .ExitCode == 0) | not)] | map("\(.Service):\(.State)/\(.Health)") | join(" ")')"
+              | jq -rs --arg ignore " ${UPGRADE_DRILL_IGNORE:-} " '[.[] | select(($ignore | contains(" " + .Service + " ")) | not) | select((.State == "running" and (.Health == "" or .Health == "healthy")) or (.State == "exited" and .ExitCode == 0) | not)] | map("\(.Service):\(.State)/\(.Health)") | join(" ")')"
             [ -z "$bad" ] && break
             sleep 10
           done
