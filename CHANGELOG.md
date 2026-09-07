@@ -9,15 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 _(no unreleased changes yet)_
 
-## [1.7.1] - 2026-09-06
+## [1.7.2] - 2026-09-07
 
-### Fixed
+### Changed
 
-- **Six of the fourteen pinned images were never compared against the
-  registry.** The freshness job iterated a list of variable names written by
-  hand, and `FETCHMAIL`, `FTS_ATTACHMENTS`, `OLETOOLS`, `REDIS`, `RESOLVER`
-  and `WEBDAV` were not on it. Every one is a digest pin, so the tag it names
-  can be repushed under the same version and nothing would say so. One of them
+- **`update.sh` names any new required variable before it moves.** An update can add a required variable; `docker compose up` used to stop on it after the checkout, with the tree already on the new tag. The script now lists the variables that appeared in `.env.example` since your version and refuses, before anything has moved, when a required one is not in your `.env`. Names only, never values.
+
+hem
   follows `apache/tika:latest-full`, a tag that moves by design, frozen at a
   digest nobody was watching. All six are current as of today, which is luck
   rather than a result.
@@ -193,7 +191,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.1...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.2...HEAD
+[1.7.2]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.5.0...v1.6.0
