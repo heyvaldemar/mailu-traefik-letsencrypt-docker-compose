@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.7.3] - 2026-09-14
+
 ### Security
 
 - **`clamav/clamav-debian:1.4` was rebuilt upstream**; the pin moved from `sha256:6a7d6f2d6539…` to `sha256:2463487b9370…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -193,7 +197,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.2...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.3...HEAD
+[1.7.3]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.6.0...v1.7.0
