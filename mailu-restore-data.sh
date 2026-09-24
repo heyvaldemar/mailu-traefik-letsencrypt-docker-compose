@@ -70,10 +70,10 @@ echo "Stopping $STOP_SERVICES so nothing writes while the data is replaced"
 docker stop $APPS > /dev/null
 # shellcheck disable=SC2086
 # FRONT RESOLVED THESE NAMES ONCE, WHEN IT STARTED. Stopped and started
-# together, admin and imap can come back on each other's addresses, and the
-# nginx in front keeps proxying /admin to the address that is now imap: the
-# clean-machine drill saw /admin/ answer 302 then 404 for fifteen minutes with
-# every container up. Restarting front makes it look the names up again.
+# together, admin and imap can come back on each other's addresses, so front
+# is restarted to look them up again. A precaution, not a proven fix: the
+# clean-machine drill saw /admin/ answer through webmail after a restore and
+# then saw the same on a fresh start with no restore, which this cannot cause.
 restart() {
   docker start $APPS > /dev/null && echo "Started $STOP_SERVICES"
   docker restart "$(cid front)" > /dev/null && echo "Restarted front, so it resolves admin and imap afresh"
