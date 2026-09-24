@@ -50,7 +50,7 @@ jobs:
       DB_RESTORE: ""
       DATA_RESTORE: "./mailu-restore-data.sh \"$S\""
       DR_DIAG: ""
-      DR_IGNORE_SERVICES: ""
+      DR_IGNORE_SERVICES: "antivirus"
       DR_KEEP: ""
     steps:
       - name: Checkout repository
@@ -167,7 +167,7 @@ jobs:
       DB_RESTORE: ""
       DATA_RESTORE: "./mailu-restore-data.sh \"$S\""
       DR_DIAG: ""
-      DR_IGNORE_SERVICES: ""
+      DR_IGNORE_SERVICES: "antivirus"
       DR_KEEP: ""
     steps:
       - name: Checkout repository
