@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **`mailu-restore-data.sh` left the front proxy pointing at stale addresses.**
+  Stopping and starting `admin` and `imap` together can hand them each other's
+  addresses, and `front` had resolved the names once at start: after a restore,
+  `/admin/` answered 302 then 404 with every container up. Found by the
+  clean-machine drill, which asks the application through the front door. The
+  script now restarts `front` after the data is back.
+
 ### Changed
 
 - **`ghcr.io/mailu/webmail:2024.06.58` moved to `ghcr.io/mailu/webmail:2024.06.59`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
