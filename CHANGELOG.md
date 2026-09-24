@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Webmail no longer carries its own Traefik router.** It had the same
+  `Host()` rule as front's router and no priority, so Traefik chose between
+  them at every start; when it chose webmail, `/admin/` and `/sso/login`
+  answered 302 to Roundcube's `sso.php` and then 404 for as long as the stack
+  ran. Front serves `/webmail` itself, with the single sign-on, which is the
+  only route Mailu documents. Found by the clean-machine drill, which saw it
+  on roughly one cold start in three, and confirmed by reading the two
+  routers side by side.
+
 - **`mailu-restore-data.sh` restarts `front` after the data is back**, as a
   precaution: `front` resolves `admin` and `imap` once at start, and the two
   are stopped and started together by the restore. The clean-machine drill saw

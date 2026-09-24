@@ -592,29 +592,14 @@ services:
     networks:
       - webmail-network
       - traefik-network
-    labels:
-      # Enable Traefik for this container
-      - "traefik.enable=true"
-      # Match incoming requests on a specific hostname
-      - "traefik.http.routers.mailu-webmail.rule=Host(`${MAILU_HOSTNAME}`)"
-      # Assign the router to a named Traefik service
-      - "traefik.http.routers.mailu-webmail.service=mailu-webmail"
-      # Use the 'websecure' (HTTPS) entry point
-      - "traefik.http.routers.mailu-webmail.entrypoints=websecure"
-      # Define the internal container port for routing
-      - "traefik.http.services.mailu-webmail.loadbalancer.server.port=80"
-      # Enable TLS on this router
-      - "traefik.http.routers.mailu-webmail.tls=true"
-      # Use Let's Encrypt for certificate management
-      - "traefik.http.routers.mailu-webmail.tls.certresolver=letsencrypt"
-      # Pass the original Host header to the container
-      - "traefik.http.services.mailu-webmail.loadbalancer.passhostheader=true"
-      # Apply a compression middleware
-      - "traefik.http.routers.mailu-webmail.middlewares=compresstraefik"
-      # Define settings for the compression middleware
-      - "traefik.http.middlewares.compresstraefik.compress=true"
-      # Specify which Docker network Traefik should use for routing
-      - "traefik.docker.network=traefik-network"
+    # NOT EXPOSED THROUGH TRAEFIK ON ITS OWN. Mailu's front serves /webmail
+    # itself, with the single sign-on that makes webmail and admin one login.
+    # Until 24 September 2026 webmail also carried a Traefik router with the
+    # same Host() rule as front's: two routers, one rule, no priority, and
+    # Traefik picked one at every start. When it picked webmail, /admin/ and
+    # /sso/login went to Roundcube and answered 302 to sso.php, then 404, for
+    # as long as the stack ran. The clean-machine drill saw it on one start in
+    # three; every deployment had the same odds.
     restart: unless-stopped
     depends_on:
       - front
