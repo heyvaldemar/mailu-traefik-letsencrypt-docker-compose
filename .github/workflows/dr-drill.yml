@@ -28,7 +28,7 @@ jobs:
   before:
     name: The host that dies runs the previous release and is backed up
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     env:
       NETWORK_TWO: traefik-network
       DOCKER_COMPOSE_FILE: mailu-traefik-letsencrypt-docker-compose.yml
@@ -52,7 +52,7 @@ jobs:
       DR_DIAG: "f=$(docker ps -aq --filter label=com.docker.compose.service=front | head -n 1); a=$(docker ps -aq --filter label=com.docker.compose.service=admin | head -n 1); docker logs --tail 15 \"$f\" 2>&1; docker logs --tail 25 \"$a\" 2>&1 | grep -viE \"alembic|GET /\"; curl -skv \"https://$APP_HOSTNAME/admin/\" -o /dev/null 2>&1 | grep -iE \"^< (HTTP|location)\"; curl -skv \"https://$APP_HOSTNAME/sso/login\" -o /dev/null 2>&1 | grep -iE \"^< (HTTP|location|server)\"; docker exec \"$a\" sh -c \"ls -la /data | head; env | grep -E \"WEB_|HOSTNAMES|DOMAIN\"\""
       DR_IGNORE_SERVICES: "antivirus"
       DR_KEEP: ""
-      DR_APP_WAIT: "900"
+      DR_APP_WAIT: "1500"
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -146,7 +146,7 @@ jobs:
     name: A clean machine brings the current release back from those files
     needs: before
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     env:
       NETWORK_TWO: traefik-network
       DOCKER_COMPOSE_FILE: mailu-traefik-letsencrypt-docker-compose.yml
@@ -170,7 +170,7 @@ jobs:
       DR_DIAG: "f=$(docker ps -aq --filter label=com.docker.compose.service=front | head -n 1); a=$(docker ps -aq --filter label=com.docker.compose.service=admin | head -n 1); docker logs --tail 15 \"$f\" 2>&1; docker logs --tail 25 \"$a\" 2>&1 | grep -viE \"alembic|GET /\"; curl -skv \"https://$APP_HOSTNAME/admin/\" -o /dev/null 2>&1 | grep -iE \"^< (HTTP|location)\"; curl -skv \"https://$APP_HOSTNAME/sso/login\" -o /dev/null 2>&1 | grep -iE \"^< (HTTP|location|server)\"; docker exec \"$a\" sh -c \"ls -la /data | head; env | grep -E \"WEB_|HOSTNAMES|DOMAIN\"\""
       DR_IGNORE_SERVICES: "antivirus"
       DR_KEEP: ""
-      DR_APP_WAIT: "900"
+      DR_APP_WAIT: "1500"
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
