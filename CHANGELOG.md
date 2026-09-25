@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.7.8] - 2026-09-24
+
 ### Fixed
 
 - **Webmail no longer carries its own Traefik router.** It had the same
