@@ -221,7 +221,13 @@ before() {
   say "starting $DR_FROM, the release this host was running"
   docker compose $(cf "$from_files") -p "$PROJECT" up -d
   wait_healthy "$from_files"
-  wait_app "${DR_APP_WAIT:-600}"
+  # THE DYING HOST'S FRONT DOOR IS NOT THE MEASUREMENT. The markers go in
+  # through the backups container and come out on the clean machine; whether
+  # the previous release answered over HTTPS is noted, not required. Mailu's
+  # v1.7.7 answered on two starts in three (two Traefik routers, one rule),
+  # and a drill that gives up on the host that is about to die anyway would
+  # measure that old fault instead of the restore.
+  wait_app "${DR_APP_WAIT:-600}" || say "the previous release did not answer over HTTPS; the markers and the backup do not depend on it"
   mkdir -p "$OUT"
   say "writing the markers"
   [ -z "$DB_ENGINE" ] || mark_write
