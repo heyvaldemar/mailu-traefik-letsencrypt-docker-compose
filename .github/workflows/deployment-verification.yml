@@ -48,6 +48,7 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      packages: read
     strategy:
       # Image refs are read from the compose file's x-images defaults at
       # runtime — single source of truth.
@@ -74,6 +75,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Log in to ghcr.io, so its rate limit is per token and not per shared runner address
+        # ghcr.io throttles anonymous pulls per address, and every runner
+        # shares a few. Immich died on TOOMANYREQUESTS three times in a week
+        # with the same commit green between. An authenticated pull is
+        # counted against the token; Trivy reads the same credential store.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: Read pinned ${{ matrix.name }} image from the compose file
         id: pin
@@ -115,6 +125,7 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
+      packages: read
 
     env:
       NETWORK_TWO: traefik-network
@@ -126,6 +137,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Log in to ghcr.io, so its rate limit is per token and not per shared runner address
+        # ghcr.io throttles anonymous pulls per address, and every runner
+        # shares a few. Immich died on TOOMANYREQUESTS three times in a week
+        # with the same commit green between. An authenticated pull is
+        # counted against the token; Trivy reads the same credential store.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: Create the external Docker network
         run: docker network create "$NETWORK_TWO" || true
