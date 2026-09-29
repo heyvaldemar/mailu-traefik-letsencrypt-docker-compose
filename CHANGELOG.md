@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.1] - 2026-09-29
+
 ### Changed
 
 - **`ghcr.io/mailu/webmail:2024.06.59` moved to `ghcr.io/mailu/webmail:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
@@ -296,7 +300,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.0...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.1...HEAD
+[1.8.1]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.8...v1.8.0
 [1.7.6]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.7.4...v1.7.5
