@@ -7,7 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Changed
+
+- **`ghcr.io/mailu/webmail:2024.06.59` moved to `ghcr.io/mailu/webmail:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/radicale:2024.06.59` moved to `ghcr.io/mailu/radicale:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/postfix:2024.06.59` moved to `ghcr.io/mailu/postfix:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/unbound:2024.06.59` moved to `ghcr.io/mailu/unbound:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/oletools:2024.06.59` moved to `ghcr.io/mailu/oletools:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/dovecot:2024.06.59` moved to `ghcr.io/mailu/dovecot:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/nginx:2024.06.59` moved to `ghcr.io/mailu/nginx:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/fetchmail:2024.06.59` moved to `ghcr.io/mailu/fetchmail:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/rspamd:2024.06.59` moved to `ghcr.io/mailu/rspamd:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/admin:2024.06.59` moved to `ghcr.io/mailu/admin:2024.06.60`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+
+### Security
+
+- **`clamav/clamav-debian:1.4` was rebuilt upstream**; the pin moved from `sha256:b12ef8fefddb…` to `sha256:6d0680780fd2…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
 
 ## [1.8.0] - 2026-09-26
 
