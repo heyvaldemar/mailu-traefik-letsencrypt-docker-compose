@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Changed
+
+- **The upgrade drill no longer grafts the resolver fix onto the previous release.** The previous release is now v1.8.7, which carries it. The drill still applies `.github/upgrade-drill-override.yml` when a repository has one.
 
 ## [1.8.7] - 2026-10-11
 

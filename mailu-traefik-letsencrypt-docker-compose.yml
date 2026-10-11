@@ -111,8 +111,10 @@ services:
     # resolver started from the image answered SERVFAIL to every name and
     # Mailu's admin refused to start (Mailu/Mailu#4118). Both root keys are
     # written as DS records before Unbound starts; Unbound trusts an initial
-    # anchor file and keeps it current itself. The digests are IANA's
-    # (data.iana.org/root-anchors) and match the keys the root serves.
+    # anchor file and follows key changes from there while it runs. The
+    # digests are IANA's (data.iana.org/root-anchors) and match the keys the
+    # root serves. A container created after the next root key rollover
+    # starts from these lines again, so that rollover means updating them.
     command:
       - /bin/sh
       - -c
