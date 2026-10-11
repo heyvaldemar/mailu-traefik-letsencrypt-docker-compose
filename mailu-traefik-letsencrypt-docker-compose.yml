@@ -104,6 +104,24 @@ services:
 
   resolver:
     image: *resolver-image
+    # THE ROOT ZONE CHANGED KEYS ON 2026-10-11. From 00:00 UTC that day the
+    # root DNSKEY set is signed by KSK-2024 (key tag 38696) alone. The trust
+    # anchor file built into this image lists KSK-2024 as ADDPEND, a key
+    # RFC 5011 does not trust until it has been seen for 30 days, so a
+    # resolver started from the image answered SERVFAIL to every name and
+    # Mailu's admin refused to start (Mailu/Mailu#4118). Both root keys are
+    # written as DS records before Unbound starts; Unbound trusts an initial
+    # anchor file and keeps it current itself. The digests are IANA's
+    # (data.iana.org/root-anchors) and match the keys the root serves.
+    command:
+      - /bin/sh
+      - -c
+      - |
+        printf '%s\n' \
+          '. IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D' \
+          '. IN DS 38696 8 2 683D2D0ACB8C9B712A1948B27F741219298D0A450D612C483AF444A4C0FB2B16' \
+          > /etc/unbound/trusted-key.key
+        exec /start.py
     # Hardening: no privilege escalation via setuid binaries
     security_opt:
       - no-new-privileges:true

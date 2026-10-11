@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **CI fails on an anonymous volume.** A `VOLUME` an image declares and no mount covers becomes an anonymous volume: never backed up, and replaced by an empty one on `down`/`up`. The deployment verification now inspects every container it starts and fails on one, unless `.github/anonymous-volumes` lists it with the reason. GLPI's data lived in exactly such a volume from 2026-08-31 to 2026-10-11.
 
+### Fixed
+
+- **The resolver trusts the root zone's new signing key.** From 00:00 UTC on 2026-10-11 the root DNSKEY set is signed by KSK-2024 (key tag 38696) alone. The trust anchor built into `ghcr.io/mailu/unbound` lists that key as ADDPEND, which RFC 5011 does not trust until it has been seen for 30 days, so any resolver started from the image that week answered SERVFAIL to every name and Mailu's admin would not start ([Mailu/Mailu#4118](https://github.com/Mailu/Mailu/issues/4118)). The resolver now writes both root keys as DS records before Unbound starts; Unbound trusts an initial anchor file and keeps it current. The digests are IANA's and match the keys the root serves. The upgrade drill grafts the same fix onto the previous release, which cannot boot without it.
+
 ## [1.8.6] - 2026-10-09
 
 ### Security
