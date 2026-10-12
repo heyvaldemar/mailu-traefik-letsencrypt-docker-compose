@@ -8,18 +8,18 @@
 x-images:
   traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:575fa15b135078fe5e50aa847987d96dbddd7b093c172429618404df73f3fa7c}}
   redis: &redis-image ${REDIS_IMAGE_TAG:-redis:${REDIS_IMAGE_VERSION:-7.4@sha256:4fa24486b8bcca8eec45ee0eb166edc674795e53a2b53d1a9ef263eecebaac85}}
-  resolver: &resolver-image ${RESOLVER_IMAGE_TAG:-ghcr.io/mailu/unbound:${RESOLVER_IMAGE_VERSION:-2024.06.61@sha256:0ae6065880506115ae1f6b5065003bb5df4e2a34da15e8e70c35ce7da994b3c7}}
-  front: &front-image ${FRONT_IMAGE_TAG:-ghcr.io/mailu/nginx:${FRONT_IMAGE_VERSION:-2024.06.61@sha256:f7cf96f13bb8211620437acfad5a67f04677e88545af713d6785b7c2ba947dd9}}
-  admin: &admin-image ${ADMIN_IMAGE_TAG:-ghcr.io/mailu/admin:${ADMIN_IMAGE_VERSION:-2024.06.61@sha256:ea2fa6dc7f5fded4790e683f3586f61568a8bdd5924bd07fca0aaa41535fb195}}
-  imap: &imap-image ${IMAP_IMAGE_TAG:-ghcr.io/mailu/dovecot:${IMAP_IMAGE_VERSION:-2024.06.61@sha256:ecf9a744018455ddc5f30728241ef355f487b026c84d1456e51e1cd344d0cba7}}
-  smtp: &smtp-image ${SMTP_IMAGE_TAG:-ghcr.io/mailu/postfix:${SMTP_IMAGE_VERSION:-2024.06.61@sha256:b04f8f585c33abd29acb1200fe3abda64abb8c6f22a8a0c9259859219791e881}}
-  oletools: &oletools-image ${OLETOOLS_IMAGE_TAG:-ghcr.io/mailu/oletools:${OLETOOLS_IMAGE_VERSION:-2024.06.61@sha256:c75f57ad386861a5321d726aa82df4ef5e092a007969f5140a0632e0109cc929}}
+  resolver: &resolver-image ${RESOLVER_IMAGE_TAG:-ghcr.io/mailu/unbound:${RESOLVER_IMAGE_VERSION:-2024.06.62@sha256:d1651db752603b126dc817e564098b01e08bb904616e96fcb31eb9d473cbe1e2}}
+  front: &front-image ${FRONT_IMAGE_TAG:-ghcr.io/mailu/nginx:${FRONT_IMAGE_VERSION:-2024.06.62@sha256:5c0cf22e86467241574d38c70aa02ea8360f0b780d490a119abbb52c2e9a4f4e}}
+  admin: &admin-image ${ADMIN_IMAGE_TAG:-ghcr.io/mailu/admin:${ADMIN_IMAGE_VERSION:-2024.06.62@sha256:5cf54e8c068091f83844c6c94e6d7bb80397db3d87f0bd8a08027585d8d99ace}}
+  imap: &imap-image ${IMAP_IMAGE_TAG:-ghcr.io/mailu/dovecot:${IMAP_IMAGE_VERSION:-2024.06.62@sha256:7c4898af97bb376ea360e26367c70ab03fec91adcdd2dfa7af7e417030e88fff}}
+  smtp: &smtp-image ${SMTP_IMAGE_TAG:-ghcr.io/mailu/postfix:${SMTP_IMAGE_VERSION:-2024.06.62@sha256:f83b2395a01530b11aeb78a57ec23530a2402debcdab684c97da5070ba18f2b1}}
+  oletools: &oletools-image ${OLETOOLS_IMAGE_TAG:-ghcr.io/mailu/oletools:${OLETOOLS_IMAGE_VERSION:-2024.06.62@sha256:f81e0b9c5fc56da6335213402d840cb6ad01e04ee952c7fc997cbe2752cf3d2f}}
   fts-attachments: &fts-attachments-image ${FTS_ATTACHMENTS_IMAGE_TAG:-apache/tika:${FTS_ATTACHMENTS_IMAGE_VERSION:-latest-full@sha256:ab9cc988828c594d32d6409e1850d1c8d83152ea793ef5fe0e7862ac0f9e5891}}
-  antispam: &antispam-image ${ANTISPAM_IMAGE_TAG:-ghcr.io/mailu/rspamd:${ANTISPAM_IMAGE_VERSION:-2024.06.61@sha256:a5336c731713e3fbadc443bd42735537e8931a58c8e1a54e809dd2dfba11174f}}
+  antispam: &antispam-image ${ANTISPAM_IMAGE_TAG:-ghcr.io/mailu/rspamd:${ANTISPAM_IMAGE_VERSION:-2024.06.62@sha256:426fb6db5d16962efad334eb888e74a2fdd4c93017f9996f7e26509f5bd305d0}}
   antivirus: &antivirus-image ${ANTIVIRUS_IMAGE_TAG:-clamav/clamav-debian:${ANTIVIRUS_IMAGE_VERSION:-1.4@sha256:6d0680780fd29855cb7018f68272cb520821f614259e2066f8ec669069ac91b3}}
-  webdav: &webdav-image ${WEBDAV_IMAGE_TAG:-ghcr.io/mailu/radicale:${WEBDAV_IMAGE_VERSION:-2024.06.61@sha256:81ef20af084ea3a71807a4114021d48fabe575849176d207d8e99a80701c996a}}
-  fetchmail: &fetchmail-image ${FETCHMAIL_IMAGE_TAG:-ghcr.io/mailu/fetchmail:${FETCHMAIL_IMAGE_VERSION:-2024.06.61@sha256:3e808bd347c6976f12e38d814eca1c600b88a8b65c249c206518a975ac212fdb}}
-  webmail: &webmail-image ${WEBMAIL_IMAGE_TAG:-ghcr.io/mailu/webmail:${WEBMAIL_IMAGE_VERSION:-2024.06.61@sha256:88e349df5258a6466564658342b7917332c253e8f21f5d3806c6402ff3c882b8}}
+  webdav: &webdav-image ${WEBDAV_IMAGE_TAG:-ghcr.io/mailu/radicale:${WEBDAV_IMAGE_VERSION:-2024.06.62@sha256:efad91a8d3ad3d25aba5e05e3b3ed63dda7346c762e17c879d7865cb1fe60962}}
+  fetchmail: &fetchmail-image ${FETCHMAIL_IMAGE_TAG:-ghcr.io/mailu/fetchmail:${FETCHMAIL_IMAGE_VERSION:-2024.06.62@sha256:ec194b8fe6cc143e66e2af49a5e44af1278625b21c61a2d238fa9ef1a8ba2ebf}}
+  webmail: &webmail-image ${WEBMAIL_IMAGE_TAG:-ghcr.io/mailu/webmail:${WEBMAIL_IMAGE_VERSION:-2024.06.62@sha256:7aaf83150595d17dbe856b24e8860fb4073eae7b566cb7a2ce69f9689da8867f}}
 
 networks:
   mailu-network:
@@ -104,26 +104,10 @@ services:
 
   resolver:
     image: *resolver-image
-    # THE ROOT ZONE CHANGED KEYS ON 2026-10-11. From 00:00 UTC that day the
-    # root DNSKEY set is signed by KSK-2024 (key tag 38696) alone. The trust
-    # anchor file built into this image lists KSK-2024 as ADDPEND, a key
-    # RFC 5011 does not trust until it has been seen for 30 days, so a
-    # resolver started from the image answered SERVFAIL to every name and
-    # Mailu's admin refused to start (Mailu/Mailu#4118). Both root keys are
-    # written as DS records before Unbound starts; Unbound trusts an initial
-    # anchor file and follows key changes from there while it runs. The
-    # digests are IANA's (data.iana.org/root-anchors) and match the keys the
-    # root serves. A container created after the next root key rollover
-    # starts from these lines again, so that rollover means updating them.
-    command:
-      - /bin/sh
-      - -c
-      - |
-        printf '%s\n' \
-          '. IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D' \
-          '. IN DS 38696 8 2 683D2D0ACB8C9B712A1948B27F741219298D0A450D612C483AF444A4C0FB2B16' \
-          > /etc/unbound/trusted-key.key
-        exec /start.py
+    # The root zone changed keys on 2026-10-11 (Mailu/Mailu#4118). Release
+    # 1.8.7 of this template wrote both root keys as DS records before Unbound
+    # started; Mailu 2024.06.62 refreshes the trust anchor itself on every
+    # start (Mailu/Mailu#4120), so the image's own entrypoint is used again.
     # Hardening: no privilege escalation via setuid binaries
     security_opt:
       - no-new-privileges:true

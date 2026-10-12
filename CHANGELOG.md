@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Mailu 2024.06.61 → 2024.06.62, all ten images.** 2024.06.62 carries Mailu's fix for the root key change of 2026-10-11 ([Mailu/Mailu#4120](https://github.com/Mailu/Mailu/pull/4120)): the resolver refreshes its trust anchor with `unbound-anchor` on every start. The deploy job booted the stack on the new images, and the admin container, which refuses to start without a DNSSEC-validating resolver, came up.
+- **The resolver runs Mailu's own entrypoint again.** v1.8.7 wrote both root keys as DS records before Unbound started; with the fix upstream that override is gone, and so is the need to edit it at the next root key rollover.
+
 - **The upgrade drill no longer grafts the resolver fix onto the previous release.** The previous release is now v1.8.7, which carries it. The drill still applies `.github/upgrade-drill-override.yml` when a repository has one.
 
 ## [1.8.7] - 2026-10-11

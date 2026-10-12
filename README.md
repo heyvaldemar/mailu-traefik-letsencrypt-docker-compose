@@ -40,7 +40,7 @@ printf "" | nc -w5 YOUR_SERVER 25   # 220 banner
 ### Common first-deploy issues
 
 - **admin restarts complaining about the DNS resolver.** The stack ships its own unbound resolver because Mailu requires DNSSEC validation: if your host firewall blocks outbound DNS (udp/53) the whole stack stays down. Fix the network, not the container.
-- **The resolver answers SERVFAIL to everything since 2026-10-11, with `failed to prime trust anchor` in its log.** That day the root zone moved to its new signing key, and the trust anchor built into the Mailu resolver image does not trust it yet. Update to this template's v1.8.7 or later, which writes both root keys before the resolver starts, then `docker compose up -d`.
+- **The resolver answers SERVFAIL to everything since 2026-10-11, with `failed to prime trust anchor` in its log.** That day the root zone moved to its new signing key, and the trust anchor built into the Mailu resolver image does not trust it yet. Update to this template's v1.8.8 or later (Mailu 2024.06.62, whose resolver refreshes its trust anchor on every start), then `docker compose up -d`. v1.8.7 also works: it writes both root keys before the resolver starts.
 - **Mail clients can't connect over TLS (465/993/995).** Traefik passes those ports through as raw TCP; the `front` container serves TLS itself from the `mailu-certificates` volume (`TLS_FLAVOR=mail`). Export Traefik's certificates with a certs-dumper or mount your own `cert.pem`/`key.pem` there.
 - **Outbound mail bounces or times out.** Your provider filters port 25. Request unblocking or use a relay (`RELAYHOST`).
 - **`docker compose up` fails with `set in .env`.** A required variable is empty; the error names it.
