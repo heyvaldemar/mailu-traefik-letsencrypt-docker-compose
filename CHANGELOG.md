@@ -7,11 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.8] - 2026-10-12
+
 ### Changed
 
 - **Mailu 2024.06.61 → 2024.06.62, all ten images.** 2024.06.62 carries Mailu's fix for the root key change of 2026-10-11 ([Mailu/Mailu#4120](https://github.com/Mailu/Mailu/pull/4120)): the resolver refreshes its trust anchor with `unbound-anchor` on every start. The deploy job booted the stack on the new images, and the admin container, which refuses to start without a DNSSEC-validating resolver, came up.
-- **The resolver runs Mailu's own entrypoint again.** v1.8.7 wrote both root keys as DS records before Unbound started; with the fix upstream that override is gone, and so is the need to edit it at the next root key rollover.
-
+- **The resolver runs Mailu's own entrypoint again.** v1.8.7 wrote both root keys as DS records before Unbound started; with the fix upstream that override is gone, and so is the need to edit it at the next root key rollover. A resolver older than 2024.06.62, set through `RESOLVER_IMAGE_VERSION` or `RESOLVER_IMAGE_TAG` in `.env`, no longer gets those records and fails as it did on 2026-10-11.
 - **The upgrade drill no longer grafts the resolver fix onto the previous release.** The previous release is now v1.8.7, which carries it. The drill still applies `.github/upgrade-drill-override.yml` when a repository has one.
 
 ## [1.8.7] - 2026-10-11
@@ -359,7 +362,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.7...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.8...HEAD
+[1.8.8]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.7...v1.8.8
 [1.8.7]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.6...v1.8.7
 [1.8.6]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.4...v1.8.5
