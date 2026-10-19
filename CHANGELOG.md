@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **What a restore sets aside stays inside the volume.** Nothing is set aside here, so a restore behaves exactly as before. The script is kept identical to the rest of the fleet's, where a move through the backups container's `/tmp` copied what was set aside and counted it against the container's memory limit. In the Ollama template, where Open WebUI's cache holds models, that copy got the restore killed for memory in three CI runs of about forty.
+- **What a restore sets aside stays inside the volume.** Nothing is set aside here, so a restore behaves exactly as before; the script stays the same as the rest of the fleet's, where a kept path moved through the backups container's `/tmp` was copied into the container's own layer and out again.
 - **The restore no longer hands the data root to root.** `mailu-restore-data.sh` put the paths it sets aside back with `cp -a /tmp/restore-keep/. <root>/`, which copies the directory's own owner and mode onto the data root, and the restored database was then given that owner. Here the restore unpacks at `/`, which is root's already, and keeps nothing aside, so no restore of this template was broken. Kept paths now go back one by one, and nothing is copied over the root. Found by the AnythingLLM template's first restore test, where an application running as uid 1000 came back unable to write.
 
 ## [1.8.13] - 2026-10-16
