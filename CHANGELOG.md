@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.15] - 2026-10-20
+
 ### Fixed
 
 - **The data archive is read back before it is called a backup.** The loop renamed the `.partial` archive after `gzip -t`, which tests the compression and nothing inside it: a tar stream tar cannot read, compressed without error, passes. It now lists the whole archive with `tar -tzf` first, and one that does not list is kept as `.failed`. The fleet's conformance rule asks for this read-back and had not been reading this repository's backup loop at all: it did not recognise `tar -C … -zcpf`.
@@ -423,7 +427,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.14...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.15...HEAD
+[1.8.15]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.14...v1.8.15
 [1.8.14]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.13...v1.8.14
 [1.8.13]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.12...v1.8.13
 [1.8.12]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.11...v1.8.12
