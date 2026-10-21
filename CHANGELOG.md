@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Changed
+
+- **`ghcr.io/mailu/webmail:2024.06.64` moved to `ghcr.io/mailu/webmail:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/radicale:2024.06.64` moved to `ghcr.io/mailu/radicale:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/postfix:2024.06.64` moved to `ghcr.io/mailu/postfix:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/unbound:2024.06.64` moved to `ghcr.io/mailu/unbound:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/oletools:2024.06.64` moved to `ghcr.io/mailu/oletools:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/dovecot:2024.06.64` moved to `ghcr.io/mailu/dovecot:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/nginx:2024.06.64` moved to `ghcr.io/mailu/nginx:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/fetchmail:2024.06.64` moved to `ghcr.io/mailu/fetchmail:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/rspamd:2024.06.64` moved to `ghcr.io/mailu/rspamd:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+- **`ghcr.io/mailu/admin:2024.06.64` moved to `ghcr.io/mailu/admin:2024.06.65`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+
+### Security
+
+- **`traefik:3.7` was rebuilt upstream**; the pin moved from `sha256:0f6150202bc1…` to `sha256:6d3e069ee484…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
+- **`redis:7.4` was rebuilt upstream**; the pin moved from `sha256:4fa24486b8bc…` to `sha256:44960b3100c4…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
 
 ## [1.8.15] - 2026-10-20
 
