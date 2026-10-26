@@ -6,8 +6,8 @@
 # CI (Trivy scans, check-pin-freshness, the ephemeral test .env) reads
 # the pins from these lines — this block is the single source of truth.
 x-images:
-  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:c8a121e4bb1347e8fd52657fab12f2cb70b68f8a018895e2068f92c9e519b9c2}}
-  redis: &redis-image ${REDIS_IMAGE_TAG:-redis:${REDIS_IMAGE_VERSION:-7.4@sha256:44960b3100c48159a66d28c18b0588c193492e25f7551d60e51dd464fc3eca5b}}
+  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:1336e85aaed293bd63d005086e0dd013b04078b26aaeb1c18b26a2f928af7e65}}
+  redis: &redis-image ${REDIS_IMAGE_TAG:-redis:${REDIS_IMAGE_VERSION:-7.4@sha256:bd28fff4b665fdf1b73e8b5b73ec05d2f858f4fa3c8ea0d7c9bc09f7f6bf7039}}
   resolver: &resolver-image ${RESOLVER_IMAGE_TAG:-ghcr.io/mailu/unbound:${RESOLVER_IMAGE_VERSION:-2024.06.67@sha256:e747fe830ccebe6c349b1911a1ce6f8668aab263253a2e7aab1a3908efe218de}}
   front: &front-image ${FRONT_IMAGE_TAG:-ghcr.io/mailu/nginx:${FRONT_IMAGE_VERSION:-2024.06.67@sha256:db40329ff3d72fd8e35e265ee1579303cf62f0670906d1fe86ad70d86a384b4a}}
   admin: &admin-image ${ADMIN_IMAGE_TAG:-ghcr.io/mailu/admin:${ADMIN_IMAGE_VERSION:-2024.06.67@sha256:cbd734f472040a359b8e251fc502e6fbd6f909be8ac2514091cc72bb1f9e88dd}}
