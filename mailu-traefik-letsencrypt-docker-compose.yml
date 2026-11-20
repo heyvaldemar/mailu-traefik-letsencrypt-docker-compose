@@ -14,7 +14,7 @@ x-images:
   imap: &imap-image ${IMAP_IMAGE_TAG:-ghcr.io/mailu/dovecot:${IMAP_IMAGE_VERSION:-2024.06.71@sha256:5cb8f19246c37c96f6ae1259cd895295f47c9883f0ee93731cdc1cfa123556f4}}
   smtp: &smtp-image ${SMTP_IMAGE_TAG:-ghcr.io/mailu/postfix:${SMTP_IMAGE_VERSION:-2024.06.71@sha256:82497f53363aa8dbd3cedae5e6a39ab54e946ab3bad40cf58ddb06002d370a5e}}
   oletools: &oletools-image ${OLETOOLS_IMAGE_TAG:-ghcr.io/mailu/oletools:${OLETOOLS_IMAGE_VERSION:-2024.06.71@sha256:b70c6d8cb2b079515f9a16921b730a47c0cc0698c47aac4194e29fc2356db145}}
-  fts-attachments: &fts-attachments-image ${FTS_ATTACHMENTS_IMAGE_TAG:-apache/tika:${FTS_ATTACHMENTS_IMAGE_VERSION:-latest-full@sha256:4774eaac44f86cdf648ae7b5a367016eaf6f9052adec31e5cff07cff1a0c6e24}}
+  fts-attachments: &fts-attachments-image ${FTS_ATTACHMENTS_IMAGE_TAG:-apache/tika:${FTS_ATTACHMENTS_IMAGE_VERSION:-latest-full@sha256:12a6b0332f1c047dc80489f336ca39fb2332e1810e75cc84e7b07a9b502c1cb0}}
   antispam: &antispam-image ${ANTISPAM_IMAGE_TAG:-ghcr.io/mailu/rspamd:${ANTISPAM_IMAGE_VERSION:-2024.06.71@sha256:986939067ec8d120e6fa86a95f9f73eb44967e749ee9e4ce26f78339e51250b1}}
   antivirus: &antivirus-image ${ANTIVIRUS_IMAGE_TAG:-clamav/clamav-debian:${ANTIVIRUS_IMAGE_VERSION:-1.4@sha256:cac3829563613e6eb21962bc2e6ef999492d4c20c01f17d0b5bec2f4b7ce0320}}
   webdav: &webdav-image ${WEBDAV_IMAGE_TAG:-ghcr.io/mailu/radicale:${WEBDAV_IMAGE_VERSION:-2024.06.71@sha256:3cc45703d419749052cbb796db2c6c542171faf5a24bc39de7fafb438dccd4ac}}
