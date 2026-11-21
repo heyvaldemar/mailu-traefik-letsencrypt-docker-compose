@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.38] - 2026-11-21
+
 ### Security
 
 - **`apache/tika:latest-full` was rebuilt upstream**; the pin moved from `sha256:4774eaac44f8…` to `sha256:12a6b0332f1c…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -630,7 +634,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.37...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.38...HEAD
+[1.8.38]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.37...v1.8.38
 [1.8.37]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.36...v1.8.37
 [1.8.36]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.35...v1.8.36
 [1.8.35]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.34...v1.8.35
