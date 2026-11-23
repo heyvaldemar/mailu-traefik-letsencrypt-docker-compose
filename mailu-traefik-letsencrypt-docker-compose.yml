@@ -16,7 +16,7 @@ x-images:
   oletools: &oletools-image ${OLETOOLS_IMAGE_TAG:-ghcr.io/mailu/oletools:${OLETOOLS_IMAGE_VERSION:-2024.06.72@sha256:1e99fe1d62e02dc8c191f2589e4d3e604540000753428562c3d29917a5182e39}}
   fts-attachments: &fts-attachments-image ${FTS_ATTACHMENTS_IMAGE_TAG:-apache/tika:${FTS_ATTACHMENTS_IMAGE_VERSION:-latest-full@sha256:12a6b0332f1c047dc80489f336ca39fb2332e1810e75cc84e7b07a9b502c1cb0}}
   antispam: &antispam-image ${ANTISPAM_IMAGE_TAG:-ghcr.io/mailu/rspamd:${ANTISPAM_IMAGE_VERSION:-2024.06.72@sha256:7cab7e6e90e5f730f57426ffb2f065ad481fa393390b05fcea6f5e012ecc22ca}}
-  antivirus: &antivirus-image ${ANTIVIRUS_IMAGE_TAG:-clamav/clamav-debian:${ANTIVIRUS_IMAGE_VERSION:-1.4@sha256:cac3829563613e6eb21962bc2e6ef999492d4c20c01f17d0b5bec2f4b7ce0320}}
+  antivirus: &antivirus-image ${ANTIVIRUS_IMAGE_TAG:-clamav/clamav-debian:${ANTIVIRUS_IMAGE_VERSION:-1.4@sha256:fce5b25d322736e707fcee5bcdeb0a2ea8c2994c28d3b24b10b516bf21846ede}}
   webdav: &webdav-image ${WEBDAV_IMAGE_TAG:-ghcr.io/mailu/radicale:${WEBDAV_IMAGE_VERSION:-2024.06.72@sha256:7ac4df8c8da01ca8246d714997e90c7f82aa434bb320f284973c52c8cb9934ca}}
   fetchmail: &fetchmail-image ${FETCHMAIL_IMAGE_TAG:-ghcr.io/mailu/fetchmail:${FETCHMAIL_IMAGE_VERSION:-2024.06.72@sha256:520073c750b1636f7797055fca4629e5f46a12f47f7c1c5cf761f1069b97cc35}}
   webmail: &webmail-image ${WEBMAIL_IMAGE_TAG:-ghcr.io/mailu/webmail:${WEBMAIL_IMAGE_VERSION:-2024.06.72@sha256:1686b4f0b902249e2399f76ade7d22516102925cb660d68713a919a7c57f2cb9}}
