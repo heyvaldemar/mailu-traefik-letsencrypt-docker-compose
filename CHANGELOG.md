@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.42] - 2026-11-25
+
 ### Security
 
 - **`redis:7.4` was rebuilt upstream**; the pin moved from `sha256:2e3eb11462c4…` to `sha256:6b645a37f49b…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -663,7 +667,8 @@ v1.2.0.
   admin UI and webmail through Traefik plus a live SMTP banner through
   the TCP router.
 
-[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.41...HEAD
+[Unreleased]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.42...HEAD
+[1.8.42]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.41...v1.8.42
 [1.8.41]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.40...v1.8.41
 [1.8.40]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.39...v1.8.40
 [1.8.39]: https://github.com/heyvaldemar/mailu-traefik-letsencrypt-docker-compose/compare/v1.8.38...v1.8.39
