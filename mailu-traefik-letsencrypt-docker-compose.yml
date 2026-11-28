@@ -8,18 +8,18 @@
 x-images:
   traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:649c6476d4c499de84572bc60f5ecf75e98e75a5b8f8a8a72010c836d8ee9f95}}
   redis: &redis-image ${REDIS_IMAGE_TAG:-redis:${REDIS_IMAGE_VERSION:-7.4@sha256:6b645a37f49b0546582468706b32e71a8b7fbb5ba4583d0f9e27a8004716b738}}
-  resolver: &resolver-image ${RESOLVER_IMAGE_TAG:-ghcr.io/mailu/unbound:${RESOLVER_IMAGE_VERSION:-2024.06.74@sha256:5640e32b551a3c928d9291f7d8dfb2ebfd8fd419dfe71d3e89d6f32fe0b9a088}}
-  front: &front-image ${FRONT_IMAGE_TAG:-ghcr.io/mailu/nginx:${FRONT_IMAGE_VERSION:-2024.06.74@sha256:ffb6280575f6de06b048d0c6dabc6cee57c3c6ab45ee0f603fe676214f2769b5}}
-  admin: &admin-image ${ADMIN_IMAGE_TAG:-ghcr.io/mailu/admin:${ADMIN_IMAGE_VERSION:-2024.06.74@sha256:3915cf829bc8da3497c8e0c06f5b90a6ddeac0be5ac8d83fdab944e7669b09cb}}
-  imap: &imap-image ${IMAP_IMAGE_TAG:-ghcr.io/mailu/dovecot:${IMAP_IMAGE_VERSION:-2024.06.74@sha256:234e07c9674a4e50065765202d6a7c1ad12883dadb3fa60c492484ccac78a04d}}
-  smtp: &smtp-image ${SMTP_IMAGE_TAG:-ghcr.io/mailu/postfix:${SMTP_IMAGE_VERSION:-2024.06.74@sha256:e8eea3b2d18280eadb2aaaff7a866f78dd8dd1765eaa0938dfe404663b1eebab}}
-  oletools: &oletools-image ${OLETOOLS_IMAGE_TAG:-ghcr.io/mailu/oletools:${OLETOOLS_IMAGE_VERSION:-2024.06.74@sha256:1e9eb2f9ffc8dc3452bf8870997ec5335c5a938c82762d8b1833fb182fe56cfe}}
+  resolver: &resolver-image ${RESOLVER_IMAGE_TAG:-ghcr.io/mailu/unbound:${RESOLVER_IMAGE_VERSION:-2024.06.75@sha256:81df2127daa34d7a8b2cc8318255e63b737864b60910f45ba6440bcffc96f255}}
+  front: &front-image ${FRONT_IMAGE_TAG:-ghcr.io/mailu/nginx:${FRONT_IMAGE_VERSION:-2024.06.75@sha256:520a79fcd8a28bae44ec49cee2efc2d86a461b5e41cb33427e2a34a033361512}}
+  admin: &admin-image ${ADMIN_IMAGE_TAG:-ghcr.io/mailu/admin:${ADMIN_IMAGE_VERSION:-2024.06.75@sha256:4aba1ba8096679ce431616e178d3adff071fed6975c55166555d3ba79aaaf511}}
+  imap: &imap-image ${IMAP_IMAGE_TAG:-ghcr.io/mailu/dovecot:${IMAP_IMAGE_VERSION:-2024.06.75@sha256:aae96d6314473b5e4222f144fb8eff67d02761d450e88ea4ed169ba845759750}}
+  smtp: &smtp-image ${SMTP_IMAGE_TAG:-ghcr.io/mailu/postfix:${SMTP_IMAGE_VERSION:-2024.06.75@sha256:08dcf2ecee96fda79dc0273b00a8d232588efa648208d279f4c7e291e1363cc5}}
+  oletools: &oletools-image ${OLETOOLS_IMAGE_TAG:-ghcr.io/mailu/oletools:${OLETOOLS_IMAGE_VERSION:-2024.06.75@sha256:1dd0928a47278e6e1163e4ba0d5b2dd03e3789ca346fcdd5c79a1a222f943c4a}}
   fts-attachments: &fts-attachments-image ${FTS_ATTACHMENTS_IMAGE_TAG:-apache/tika:${FTS_ATTACHMENTS_IMAGE_VERSION:-latest-full@sha256:12a6b0332f1c047dc80489f336ca39fb2332e1810e75cc84e7b07a9b502c1cb0}}
-  antispam: &antispam-image ${ANTISPAM_IMAGE_TAG:-ghcr.io/mailu/rspamd:${ANTISPAM_IMAGE_VERSION:-2024.06.74@sha256:1350b08da29bf624330525ffffc3e3cbf6ed86aa5aa6420674ea83d02a89395a}}
+  antispam: &antispam-image ${ANTISPAM_IMAGE_TAG:-ghcr.io/mailu/rspamd:${ANTISPAM_IMAGE_VERSION:-2024.06.75@sha256:c85dafac7f9af60f069a5dfeff176a60b4f753705eb53647eae954d8da26062c}}
   antivirus: &antivirus-image ${ANTIVIRUS_IMAGE_TAG:-clamav/clamav-debian:${ANTIVIRUS_IMAGE_VERSION:-1.4@sha256:fce5b25d322736e707fcee5bcdeb0a2ea8c2994c28d3b24b10b516bf21846ede}}
-  webdav: &webdav-image ${WEBDAV_IMAGE_TAG:-ghcr.io/mailu/radicale:${WEBDAV_IMAGE_VERSION:-2024.06.74@sha256:16f5efcca694da5ae0dbdfac6105cd4fd012dd21e734a935b8b8ee62ede16000}}
-  fetchmail: &fetchmail-image ${FETCHMAIL_IMAGE_TAG:-ghcr.io/mailu/fetchmail:${FETCHMAIL_IMAGE_VERSION:-2024.06.74@sha256:19e1e501d47d3cba587d48b701c515429a239202d98adfe2c259d14b7a0b9256}}
-  webmail: &webmail-image ${WEBMAIL_IMAGE_TAG:-ghcr.io/mailu/webmail:${WEBMAIL_IMAGE_VERSION:-2024.06.74@sha256:2e41502b968e5ae8bd6bf33fb69e85e21a67e37318279b98ab3436943d13d3f5}}
+  webdav: &webdav-image ${WEBDAV_IMAGE_TAG:-ghcr.io/mailu/radicale:${WEBDAV_IMAGE_VERSION:-2024.06.75@sha256:ed693bb317d5a4c1e0a954ab6e2b5faf7a21c2bb96a3662d9396b1e1a57755be}}
+  fetchmail: &fetchmail-image ${FETCHMAIL_IMAGE_TAG:-ghcr.io/mailu/fetchmail:${FETCHMAIL_IMAGE_VERSION:-2024.06.75@sha256:fa48baed25ac87a000d9532057803a1db2f3a1668630efc0a575bdbbbbc22311}}
+  webmail: &webmail-image ${WEBMAIL_IMAGE_TAG:-ghcr.io/mailu/webmail:${WEBMAIL_IMAGE_VERSION:-2024.06.75@sha256:0aef9039b6de70826869b2d0ab5db2a76f2be59c9940e623f8818471a474950d}}
 
 networks:
   mailu-network:
